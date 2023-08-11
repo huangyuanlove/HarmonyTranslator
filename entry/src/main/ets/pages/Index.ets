@@ -10,14 +10,34 @@ struct Index {
   @State sourceVoice: string = ''
   @State resultVoice: string = ''
   @State inputContent: string = '好好学习天天向上';
+  @State from: string = 'zh'
+  @State to: string = 'en'
 
-  getInputForSign() {
+  getInputForYoudaoSign() {
     var len = this.inputContent.length;
     if (len <= 20) {
       return this.inputContent;
     }
     return this.inputContent.substring(0, 10) + len + this.inputContent.substring(len - 10, len);
   }
+
+  getShowLanguageName(code:string){
+    if(code == 'zh'){
+      return '中文';
+    }else if(code == 'en'){
+      return '英文'
+    }else{
+      return '自动识别'
+    }
+  }
+  getTranslateCodeForYoudao(code:string){
+    if(code =='en'){
+      return 'en'
+    }else if(code =='zh'){
+      return 'zh-CHS'
+    }
+  }
+
 
   stringToUint8Array(str) {
     var arr = [];
@@ -42,9 +62,15 @@ struct Index {
         })
 
       Row() {
-        Text('自动识别').margin(10)
-        Image($r("app.media.switch_language_positions")).width(23).height(20)
-        Text('简体中文').margin(10)
+        Text( this.getShowLanguageName(this.from)).margin(10)
+        Image($r("app.media.switch_language_positions")).width(23).height(20).onClick(() => {
+
+          var temp = this.from;
+          this.from = this.to;
+          this.to = temp
+
+        })
+        Text(this.getShowLanguageName(this.to)).margin(10)
       }.justifyContent(FlexAlign.SpaceAround).width('80%')
 
       Row() {
@@ -58,13 +84,13 @@ struct Index {
           .backgroundColor(Color.Green)
           .onClick(() => {
 
-           var youdaoAppID = ''
-           var youdaoSecretKey = '';
+            var youdaoAppID = ''
+            var youdaoSecretKey = '';
 
             let httpRequest = http.createHttp();
             let salt = util.generateRandomUUID(false);
             let currentTime = Math.round(new Date().getTime() / 1000)
-            let signStr = youdaoAppID + this.getInputForSign() + salt + currentTime + youdaoSecretKey;
+            let signStr = youdaoAppID + this.getInputForYoudaoSign() + salt + currentTime + youdaoSecretKey;
             console.error('xuan', '加密字符串  ' + signStr)
 
             var sha256Result = CryptoJS.SHA256(signStr)
@@ -72,7 +98,7 @@ struct Index {
             console.error('sha256=' + sha256Result)
             var q = encodeURIComponent(this.inputContent)
 
-            var params = `q=${q}&from=zh-CHS&to=en&appKey=${youdaoAppID}&salt=${salt}&sign=${sha256Result.toString()}&signType=v3&curtime=${currentTime}`
+            var params = `q=${q}&from=${this.getTranslateCodeForYoudao(this.from)}&to=${this.getTranslateCodeForYoudao(this.to)}&appKey=${youdaoAppID}&salt=${salt}&sign=${sha256Result.toString()}&signType=v3&curtime=${currentTime}`
 
 
             httpRequest.request(
@@ -137,23 +163,13 @@ struct Index {
             let signStr = baiduAppID + this.inputContent + salt + baiduSec;
             console.error('xuan', '加密字符串  ' + signStr)
 
-            var sha256Result = CryptoJS.MD5(signStr)
+            var sha256Result = CryptoJS.MD5(signStr).toString()
 
-            var extraDate = {
-              "q": this.inputContent,
-              "from": "auto",
-              "to": "en",
-              "appid": baiduAppID,
-              "salt": salt,
-              "sign": sha256Result.toString()
-
-            }
-            console.error('xuan', JSON.stringify(extraDate))
-
+            var params = `q=${this.inputContent}&from=${this.from}&to=${this.to}&appid=${baiduAppID}&salt=${salt}&sign=${sha256Result}`
 
             httpRequest.request(
               // 填写HTTP请求的URL地址，可以带参数也可以不带参数。URL地址需要开发者自定义。请求的参数可以在extraData中指定
-              "https://fanyi-api.baidu.com/api/trans/vip/translate?q=" + this.inputContent + "&from=zh&to=en&appid=" + appID + "&salt=" + salt + "&sign=" + sha256Result.toString(),
+              "https://fanyi-api.baidu.com/api/trans/vip/translate?" + params,
               {
                 method: http.RequestMethod.GET, // 可选，默认为http.RequestMethod.GET
                 expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
@@ -195,3 +211,4 @@ struct Index {
 
   }
 }
+
