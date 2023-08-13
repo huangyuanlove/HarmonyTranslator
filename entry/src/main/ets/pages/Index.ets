@@ -11,6 +11,7 @@ PersistentStorage.PersistProp('translate_to_name', '英文')
 PersistentStorage.PersistProp('translate_to_code', 'en')
 PersistentStorage.PersistProp('youdao_app_id', '')
 PersistentStorage.PersistProp('youdao_secrite', '')
+PersistentStorage.PersistProp('translate_type', 'immediately')
 
 
 @Entry
@@ -36,10 +37,12 @@ struct Index {
   }
 
   aboutToDisappear() {
-    delete this.dialogController, // 删除dialogController
-    this.dialogController = undefined // 将dialogController置空
+    delete this.selectLanguageDialogController, // 删除dialogController
+    this.selectLanguageDialogController = undefined // 将dialogController置空
     delete this.setAppInfoDialogController, // 删除dialogController
     this.setAppInfoDialogController = undefined // 将dialogController置空
+    delete this.setUserPreferDialogController, // 删除dialogController
+    this.setUserPreferDialogController = undefined // 将dialogController置空
   }
 
   onAccept(selectLanguage: TranslateLanguage) {
@@ -51,7 +54,7 @@ struct Index {
 
   }
 
-  dialogController: CustomDialogController = new CustomDialogController({
+  selectLanguageDialogController: CustomDialogController = new CustomDialogController({
     builder: SelectLanguageDialog({
       confirm: this.onAccept.bind(this),
     }),
@@ -62,6 +65,11 @@ struct Index {
     builder:SetApiInfoDialog(),
     customStyle:true
 
+  })
+
+  setUserPreferDialogController:CustomDialogController = new CustomDialogController({
+    builder:SetUserPreferDialog(),
+    customStyle:false
   })
 
 
@@ -84,29 +92,58 @@ struct Index {
 
   build() {
     Column() {
-      TextInput({ placeholder: $r('app.string.text_to_be_translated') })
-        .width('90%')
-        .margin(10)
-        .padding(10)
-        .backgroundColor(Color.Gray)
-        .borderRadius(10)
-        .fontColor(Color.White)
-        .onChange((value) => {
-          this.inputContent = value
-        })
-      .onEditChange((isEdit)=>{
-        console.error('isEdit-->' + isEdit)
-      })
+      Flex({alignItems:ItemAlign.Center}){
+        TextInput({ placeholder: $r('app.string.text_to_be_translated') })
+          .layoutWeight(1)
+          .margin(10)
+          .padding(10)
+          .backgroundColor(Color.Gray)
+          .borderRadius(10)
+          .fontColor(Color.White)
+          .onChange((value) => {
+            this.inputContent = value
+          })
+          .onEditChange((isEdit)=>{
+            console.error('isEdit-->' + isEdit)
+          })
+        Image($r('app.media.menu'))
+          .margin({right:10})
+          .width(40)
+          .height(40)
+          .bindMenu([
+          {
+            value:"设置key",
+            action:()=>{
+              if(this.setAppInfoDialogController != undefined) {
+                this.setAppInfoDialogController.open()
+              }
+            }
+          },
+          {
+            value:"偏好设置",
+            action:()=>{
+              if(this.setUserPreferDialogController != undefined){
+            this.setUserPreferDialogController.open()
+
+              }
+            }
+          }
+        ])
+      }
+
+
+
+
       Stack({alignContent:Alignment.End}) {
 
 
         Row() {
           Text(this.translateFromName).margin(10).width('40%')
             .onClick(() => {
-              if (this.dialogController != undefined) {
+              if (this.selectLanguageDialogController != undefined) {
                 this.changeFromLanguageType = true;
                 this.changeToLanguageType = false;
-                this.dialogController.open()
+                this.selectLanguageDialogController.open()
               }
             }).textAlign(TextAlign.Center)
 
@@ -119,7 +156,7 @@ struct Index {
             .onClick(() => {
               this.changeFromLanguageType = true;
               this.changeToLanguageType = false;
-              this.dialogController.open()
+              this.selectLanguageDialogController.open()
             }).textAlign(TextAlign.Center)
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
 
@@ -284,6 +321,38 @@ struct SelectLanguageList {
 
 
 @CustomDialog
+struct SetUserPreferDialog{
+  controller:CustomDialogController;
+
+  @StorageLink('translate_type') translateType:string = 'immediately'
+
+  build(){
+    Column(){
+      Text('翻译时机')
+      Row(){
+        Radio({value:'immediately',group:'translate_type'})
+          .checked(this.translateType=='immediately')
+          .onChange((isChecked: boolean) => {
+          if(isChecked){
+            this.translateType = 'immediately'
+          }
+        })
+        Text('立即翻译')
+        Radio({value:'on_confirm',group:'translate_type'})
+          .checked(this.translateType=='on_confirm')
+          .onChange((isChecked: boolean) => {
+          if(isChecked){
+            this.translateType = 'on_confirm'
+          }
+        })
+        Text('点击确认')
+      }
+    }
+  }
+}
+
+
+@CustomDialog
 struct SetApiInfoDialog{
 
   controller:CustomDialogController;
@@ -296,6 +365,14 @@ struct SetApiInfoDialog{
 
   build(){
     Column(){
+
+      Row(){
+        Text('如何申请')
+        Image($r('app.media.tip')).width(20).height(20)
+      }.onClick(()=>{
+        //todo 跳转到申请说明页面
+      }).justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center)
+
       TextInput({placeholder:'请输入申请的应用id'}).onChange((value)=>{
         this.appid = value.toString()
       }).margin(10).padding(10).borderRadius(10)
