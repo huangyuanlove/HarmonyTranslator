@@ -3,6 +3,7 @@ import util from '@ohos.util';
 import CryptoJS from '@ohos/crypto-js'
 import prompt from '@ohos.promptAction';
 import { YoudaoTranslateResult, TranslateLanguage, LanguageGroup } from '../model/TranslateResult';
+import router from '@ohos.router';
 
 //只能在UI页面使用，否则无法持久化数据
 PersistentStorage.PersistProp('translate_from_name', '自动识别')
@@ -297,7 +298,6 @@ struct SelectLanguageList {
                 .margin(10)
                 .backgroundColor(0x39d167)
                 .onClick(() => {
-                  console.error('列表数据长度-->' + this.data.length + ' 分组长度-->' + languageGroup.languages.length);
                   if (this.confirm != undefined) {
                     this.confirm(language)
                   }
@@ -369,9 +369,20 @@ struct SetApiInfoDialog{
       Row(){
         Text('如何申请')
         Image($r('app.media.tip')).width(20).height(20)
-      }.onClick(()=>{
-        //todo 跳转到申请说明页面
-      }).justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center)
+      }.justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center)
+      .bindMenu([
+        {
+          value:"有道翻译",
+          action:()=>{
+            router.pushUrl({url:'pages/ApplyTranslateKey',params:{'url':'https://ai.youdao.com/doc.s#guide'} })
+          }
+        }, {
+        value:"百度翻译",
+        action:()=>{
+
+          router.pushUrl({url:'pages/ApplyTranslateKey',params: {'url':'https://fanyi-api.baidu.com/product/113'}})
+        }
+      },])
 
       TextInput({placeholder:'请输入申请的应用id'}).onChange((value)=>{
         this.appid = value.toString()
