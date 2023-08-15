@@ -74,6 +74,69 @@ struct Index {
   })
 
 
+  youdaoTranslate(){
+
+    let httpRequest = http.createHttp();
+    let salt = util.generateRandomUUID(false);
+    let currentTime = Math.round(new Date().getTime() / 1000)
+    let signStr = this.youdao_app_id + this.getInputForYoudaoSign() + salt + currentTime + this.youdao_secrite;
+    console.error('xuan', '加密字符串  ' + signStr)
+
+    var sha256Result = CryptoJS.SHA256(signStr)
+
+    console.error('sha256=' + sha256Result)
+    var q = encodeURIComponent(this.inputContent)
+
+    var params = `q=${q}&from=${this.translateFromCode}&to=${this.translateToCode}&appKey=${this.youdao_app_id}&salt=${salt}&sign=${sha256Result.toString()}&signType=v3&curtime=${currentTime}`
+
+
+    httpRequest.request(
+      // 填写HTTP请求的URL地址，可以带参数也可以不带参数。URL地址需要开发者自定义。请求的参数可以在extraData中指定
+      "https://openapi.youdao.com/api?" + params,
+      {
+        method: http.RequestMethod.GET, // 可选，默认为http.RequestMethod.GET
+        // 开发者根据自身业务需要添加header字段
+        header: {
+          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
+        },
+        // extraData: extraDate,
+        expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
+        usingCache: false, // 可选，默认为true
+        priority: 1, // 可选，默认为1
+        connectTimeout: 60000, // 可选，默认为60000ms
+        readTimeout: 60000, // 可选，默认为60000ms
+        usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
+      }, (err, data) => {
+      if (!err) {
+        if (data.responseCode == http.ResponseCode.OK) {
+          const result: YoudaoTranslateResult = JSON.parse(data.result.toString());
+          var errorCode = result.errorCode
+          if (errorCode == '0') {
+            this.translateResult = result.translation.toString()
+            this.resultVoice = result.tSpeakUrl
+            this.sourceVoice = result.speakUrl
+          } else {
+            this.translateResult = JSON.stringify(result)
+            this.resultVoice = ''
+            this.sourceVoice = ''
+          }
+        } else {
+          this.translateResult = '出错啦'
+          this.sourceVoice = ''
+          this.resultVoice = ''
+        }
+
+      } else {
+        this.translateResult = JSON.stringify(err)
+        this.resultVoice = ''
+        this.sourceVoice = ''
+        httpRequest.destroy();
+      }
+    }
+    );
+  }
+
+
   getInputForYoudaoSign() {
     var len = this.inputContent.length;
     if (len <= 20) {
@@ -102,6 +165,8 @@ struct Index {
           .borderRadius(10)
           .fontColor(Color.White)
           .onChange((value) => {
+            console.error('onInputChange-->' + value)
+
             this.inputContent = value
           })
           .onEditChange((isEdit)=>{
@@ -178,71 +243,7 @@ struct Index {
           .margin(10)
           .padding(10)
           .backgroundColor(Color.Green)
-          .onClick(() => {
-
-
-
-            let httpRequest = http.createHttp();
-            let salt = util.generateRandomUUID(false);
-            let currentTime = Math.round(new Date().getTime() / 1000)
-            let signStr = this.youdao_app_id + this.getInputForYoudaoSign() + salt + currentTime + this.youdao_secrite;
-            console.error('xuan', '加密字符串  ' + signStr)
-
-            var sha256Result = CryptoJS.SHA256(signStr)
-
-            console.error('sha256=' + sha256Result)
-            var q = encodeURIComponent(this.inputContent)
-
-            var params = `q=${q}&from=${this.translateFromCode}&to=${this.translateToCode}&appKey=${this.youdao_app_id}&salt=${salt}&sign=${sha256Result.toString()}&signType=v3&curtime=${currentTime}`
-
-
-            httpRequest.request(
-              // 填写HTTP请求的URL地址，可以带参数也可以不带参数。URL地址需要开发者自定义。请求的参数可以在extraData中指定
-              "https://openapi.youdao.com/api?" + params,
-              {
-                method: http.RequestMethod.GET, // 可选，默认为http.RequestMethod.GET
-                // 开发者根据自身业务需要添加header字段
-                header: {
-                  'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
-                },
-                // extraData: extraDate,
-                expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
-                usingCache: false, // 可选，默认为true
-                priority: 1, // 可选，默认为1
-                connectTimeout: 60000, // 可选，默认为60000ms
-                readTimeout: 60000, // 可选，默认为60000ms
-                usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
-              }, (err, data) => {
-              if (!err) {
-                if (data.responseCode == http.ResponseCode.OK) {
-                  const result: YoudaoTranslateResult = JSON.parse(data.result.toString());
-                  var errorCode = result.errorCode
-                  if (errorCode == '0') {
-                    this.translateResult = result.translation.toString()
-                    this.resultVoice = result.tSpeakUrl
-                    this.sourceVoice = result.speakUrl
-                  } else {
-                    this.translateResult = JSON.stringify(result)
-                    this.resultVoice = ''
-                    this.sourceVoice = ''
-                  }
-                } else {
-                  this.translateResult = '出错啦'
-                  this.sourceVoice = ''
-                  this.resultVoice = ''
-                }
-
-              } else {
-                this.translateResult = JSON.stringify(err)
-                this.resultVoice = ''
-                this.sourceVoice = ''
-                httpRequest.destroy();
-              }
-            }
-            );
-
-
-          })
+          .onClick(this.youdaoTranslate.bind(this))
       }.width('100%')
 
       Text(this.translateResult).margin(10).padding(10)
@@ -409,3 +410,6 @@ struct SetApiInfoDialog{
     }.margin(15).borderRadius(10).backgroundColor(Color.White).padding(10)
   }
 }
+
+
+
