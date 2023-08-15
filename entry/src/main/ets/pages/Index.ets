@@ -30,8 +30,10 @@ struct Index {
   @StorageLink('translate_to_code') translateToCode: string = 'en'
   @StorageLink('youdao_app_id') youdao_app_id: string = ''
   @StorageLink('youdao_secrite') youdao_secrite: string = ''
+  @StorageLink('translate_type') translate_type: string = 'immediately'
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
+  private queryTimer: number = 0;
 
   aboutToAppear() {
 
@@ -61,31 +63,30 @@ struct Index {
     }),
     autoCancel: true,
   })
-
-  setAppInfoDialogController : CustomDialogController = new CustomDialogController({
-    builder:SetApiInfoDialog(),
-    customStyle:true
+  setAppInfoDialogController: CustomDialogController = new CustomDialogController({
+    builder: SetApiInfoDialog(),
+    customStyle: true
 
   })
-
-  setUserPreferDialogController:CustomDialogController = new CustomDialogController({
-    builder:SetUserPreferDialog(),
-    customStyle:false
+  setUserPreferDialogController: CustomDialogController = new CustomDialogController({
+    builder: SetUserPreferDialog(),
+    customStyle: true
   })
 
-
-  youdaoTranslate(){
+  youdaoTranslate() {
+    console.error('调用翻译youdaoTranslate--> ' + this.inputContent)
 
     let httpRequest = http.createHttp();
     let salt = util.generateRandomUUID(false);
     let currentTime = Math.round(new Date().getTime() / 1000)
     let signStr = this.youdao_app_id + this.getInputForYoudaoSign() + salt + currentTime + this.youdao_secrite;
-    console.error('xuan', '加密字符串  ' + signStr)
+
 
     var sha256Result = CryptoJS.SHA256(signStr)
 
-    console.error('sha256=' + sha256Result)
+
     var q = encodeURIComponent(this.inputContent)
+
 
     var params = `q=${q}&from=${this.translateFromCode}&to=${this.translateToCode}&appKey=${this.youdao_app_id}&salt=${salt}&sign=${sha256Result.toString()}&signType=v3&curtime=${currentTime}`
 
@@ -108,6 +109,8 @@ struct Index {
         usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
       }, (err, data) => {
       if (!err) {
+        console.error('翻译结果-->')
+        console.error(data.result.toString())
         if (data.responseCode == http.ResponseCode.OK) {
           const result: YoudaoTranslateResult = JSON.parse(data.result.toString());
           var errorCode = result.errorCode
@@ -136,7 +139,6 @@ struct Index {
     );
   }
 
-
   getInputForYoudaoSign() {
     var len = this.inputContent.length;
     if (len <= 20) {
@@ -156,7 +158,7 @@ struct Index {
 
   build() {
     Column() {
-      Flex({alignItems:ItemAlign.Center}){
+      Flex({ alignItems: ItemAlign.Center }) {
         TextInput({ placeholder: $r('app.string.text_to_be_translated') })
           .layoutWeight(1)
           .margin(10)
@@ -168,39 +170,52 @@ struct Index {
             console.error('onInputChange-->' + value)
 
             this.inputContent = value
+            console.log('上次timer id ——>' + this.queryTimer)
+            if (this.queryTimer != 0) {
+              clearTimeout(this.queryTimer)
+            }
+            if (this.translate_type == 'immediately') {
+              this.queryTimer = setTimeout(this.youdaoTranslate.bind(this), 500)
+            } else {
+              console.error('需要点击发送按钮才会进行翻译')
+            }
+
+
           })
-          .onEditChange((isEdit)=>{
+          .enterKeyType(EnterKeyType.Done)
+          .onEditChange((isEdit) => {
             console.error('isEdit-->' + isEdit)
           })
+          .onSubmit((enterKeyType: EnterKeyType) => {
+            this.youdaoTranslate();
+          })
         Image($r('app.media.menu'))
-          .margin({right:10})
+          .margin({ right: 10 })
           .width(40)
           .height(40)
           .bindMenu([
-          {
-            value:"设置key",
-            action:()=>{
-              if(this.setAppInfoDialogController != undefined) {
-                this.setAppInfoDialogController.open()
+            {
+              value: "设置key",
+              action: () => {
+                if (this.setAppInfoDialogController != undefined) {
+                  this.setAppInfoDialogController.open()
+                }
               }
-            }
-          },
-          {
-            value:"偏好设置",
-            action:()=>{
-              if(this.setUserPreferDialogController != undefined){
-            this.setUserPreferDialogController.open()
+            },
+            {
+              value: "偏好设置",
+              action: () => {
+                if (this.setUserPreferDialogController != undefined) {
+                  this.setUserPreferDialogController.open()
 
+                }
               }
             }
-          }
-        ])
+          ])
       }
 
 
-
-
-      Stack({alignContent:Alignment.End}) {
+      Stack({ alignContent: Alignment.End }) {
 
 
         Row() {
@@ -226,25 +241,8 @@ struct Index {
             }).textAlign(TextAlign.Center)
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
 
-        Image($r('app.media.setting')).width(18).height(18)
-          .onClick(() => {
-            prompt.showToast({ message: '配置appid 和 appkey' });
-            if(this.setAppInfoDialogController != undefined){
-              this.setAppInfoDialogController.open()
-            }
-          }).margin({right:15})
       }.width('100%')
 
-
-      Row() {
-        Text('有道翻译')
-          .fontColor(Color.White)
-          .fontSize(18)
-          .margin(10)
-          .padding(10)
-          .backgroundColor(Color.Green)
-          .onClick(this.youdaoTranslate.bind(this))
-      }.width('100%')
 
       Text(this.translateResult).margin(10).padding(10)
       Text(this.sourceVoice).margin(10).padding(10)
@@ -322,90 +320,125 @@ struct SelectLanguageList {
 
 
 @CustomDialog
-struct SetUserPreferDialog{
-  controller:CustomDialogController;
+struct SetUserPreferDialog {
+  controller: CustomDialogController;
+  @StorageLink('translate_type') translateType: string = 'immediately'
 
-  @StorageLink('translate_type') translateType:string = 'immediately'
+  build() {
+    Column() {
+      Text('偏好设置').width('100%').fontColor(0X333333).fontSize(20).textAlign(TextAlign.Center)
+      Divider().margin({top:15})
+      Text('翻译时机').width('100%').fontSize(18).padding(10)
 
-  build(){
-    Column(){
-      Text('翻译时机')
-      Row(){
-        Radio({value:'immediately',group:'translate_type'})
-          .checked(this.translateType=='immediately')
+      Row() {
+        Radio({ value: 'immediately', group: 'translate_type' })
+          .checked(this.translateType == 'immediately')
           .onChange((isChecked: boolean) => {
-          if(isChecked){
-            this.translateType = 'immediately'
-          }
-        })
+            if (isChecked) {
+              this.translateType = 'immediately'
+            }
+          })
+
         Text('立即翻译')
-        Radio({value:'on_confirm',group:'translate_type'})
-          .checked(this.translateType=='on_confirm')
+        Radio({ value: 'on_confirm', group: 'translate_type' })
+          .checked(this.translateType == 'on_confirm')
           .onChange((isChecked: boolean) => {
-          if(isChecked){
-            this.translateType = 'on_confirm'
-          }
-        })
+            if (isChecked) {
+              this.translateType = 'on_confirm'
+            }
+          })
         Text('点击确认')
-      }
-    }
+
+
+      }.width('100%').justifyContent(FlexAlign.Start).padding(10)
+
+      Divider()
+      Text('翻译接口').width('100%').fontSize(18).padding(10)
+      Row() {
+        Radio({ value: 'youdao', group: 'translate_api' }).checked(true)
+        Text('有道翻译')
+
+
+        Radio({ value: 'baidu', group: 'translate_api' }).enabled(false).onClick(()=>{
+          prompt.showToast({message:'正在紧急开发中'})
+        })
+        Text('百度翻译').onClick(()=>{
+          prompt.showToast({message:'正在紧急开发中'})
+        })
+      }.width('100%').padding(10)
+    }.padding(10)
+    .margin(15)
+    .borderRadius(10)
+    .backgroundColor(Color.White)
+    .padding(10)
+    .align(Alignment.Start)
   }
 }
 
 
 @CustomDialog
-struct SetApiInfoDialog{
+struct SetApiInfoDialog {
+  controller: CustomDialogController;
+  @State appid: string = ''
+  @State appKey: string = ''
+  @StorageLink('youdao_app_id') storageId: string = ''
+  @StorageLink('youdao_secrite') storageKey: string = ''
 
-  controller:CustomDialogController;
+  build() {
+    Column() {
 
-  @State appid:string = ''
-  @State appKey:string =''
-
-  @StorageLink('youdao_app_id') storageId:string = ''
-  @StorageLink('youdao_secrite') storageKey:string = ''
-
-  build(){
-    Column(){
-
-      Row(){
+      Row() {
         Text('如何申请')
         Image($r('app.media.tip')).width(20).height(20)
       }.justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center)
       .bindMenu([
         {
-          value:"有道翻译",
-          action:()=>{
-            router.pushUrl({url:'pages/ApplyTranslateKey',params:{'url':'https://ai.youdao.com/doc.s#guide'} })
+          value: "有道翻译",
+          action: () => {
+            router.pushUrl({ url: 'pages/ApplyTranslateKey', params: { 'url': 'https://ai.youdao.com/doc.s#guide' } })
           }
         }, {
-        value:"百度翻译",
-        action:()=>{
+        value: "百度翻译",
+        action: () => {
 
-          router.pushUrl({url:'pages/ApplyTranslateKey',params: {'url':'https://fanyi-api.baidu.com/product/113'}})
+          router.pushUrl({
+            url: 'pages/ApplyTranslateKey',
+            params: { 'url': 'https://fanyi-api.baidu.com/product/113' }
+          })
         }
       },])
 
-      TextInput({placeholder:'请输入申请的应用id'}).onChange((value)=>{
+      TextInput({ placeholder: '请输入申请的应用id' }).onChange((value) => {
         this.appid = value.toString()
       }).margin(10).padding(10).borderRadius(10)
-      TextInput({placeholder:'请输入申请的应用密钥'})
-        .onChange((value)=>{
+      TextInput({ placeholder: '请输入申请的应用密钥' })
+        .onChange((value) => {
           this.appKey = value.toString()
         }).margin(10).padding(10).borderRadius(10)
-      Row(){
-        Text('取消').onClick(()=>{
-          if(this.controller != undefined){
-            this.controller.close()
-          }
-        }).backgroundColor(Color.Gray).borderRadius(8).fontColor(Color.White).padding({top:10,bottom:10,left:15,right:15})
-        Text('确认').onClick(()=>{
+      Row() {
+        Text('取消')
+          .onClick(() => {
+            if (this.controller != undefined) {
+              this.controller.close()
+            }
+          })
+          .backgroundColor(Color.Gray)
+          .borderRadius(8)
+          .fontColor(Color.White)
+          .padding({ top: 10, bottom: 10, left: 15, right: 15 })
+        Text('确认')
+          .onClick(() => {
 
-          this.storageId = this.appid
-          this.storageKey = this.appKey
-          if(this.controller != undefined){
-            this.controller.close()
-          }
-        }).backgroundColor(0X39d157).borderRadius(8).fontColor(Color.White).padding({top:10,bottom:10,left:15,right:15})
+            this.storageId = this.appid
+            this.storageKey = this.appKey
+            if (this.controller != undefined) {
+              this.controller.close()
+            }
+          })
+          .backgroundColor(0X39d157)
+          .borderRadius(8)
+          .fontColor(Color.White)
+          .padding({ top: 10, bottom: 10, left: 15, right: 15 })
       }.justifyContent(FlexAlign.SpaceAround).width('80%')
     }.margin(15).borderRadius(10).backgroundColor(Color.White).padding(10)
   }
