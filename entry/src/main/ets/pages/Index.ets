@@ -21,10 +21,10 @@ struct Index {
   @State translateResult: string = '待翻译'
   @State sourceVoice: string = ''
   @State resultVoice: string = ''
-  @State inputContent: string = '好好学习天天向上';
-  @State textValue: string = ''
-  @State inputValue: string = 'click me'
-  @StorageLink('translate_from_name') translateFromName: string = 'aaaaa'
+  @State inputContent: string = '';
+  @State basicExplains:string[]=[];
+
+  @StorageLink('translate_from_name') translateFromName: string = '自动识别'
   @StorageLink('translate_from_code') translateFromCode: string = 'auto'
   @StorageLink('translate_to_name') translateToName: string = '英文'
   @StorageLink('translate_to_code') translateToCode: string = 'en'
@@ -50,8 +50,14 @@ struct Index {
 
   onAccept(selectLanguage: TranslateLanguage) {
     console.error('this is ?' + this)
-    this.translateFromName = selectLanguage.name
-    this.translateFromCode = selectLanguage.code
+    if(this.changeFromLanguageType){
+      this.translateFromName = selectLanguage.name
+      this.translateFromCode = selectLanguage.code
+    }else if(this.changeToLanguageType){
+      this.translateToName = selectLanguage.name
+      this.translateToCode = selectLanguage.code
+    }
+
     console.error('Callback when the second button is clicked')
     prompt.showToast({ message: "选择的语言--> " + selectLanguage.name + ",code-->" + selectLanguage.code })
 
@@ -110,14 +116,19 @@ struct Index {
       }, (err, data) => {
       if (!err) {
         console.error('翻译结果-->')
-        console.error(data.result.toString())
+        console.error(JSON.stringify(data.result.toString()))
         if (data.responseCode == http.ResponseCode.OK) {
-          const result: YoudaoTranslateResult = JSON.parse(data.result.toString());
-          var errorCode = result.errorCode
+          const result:YoudaoTranslateResult = YoudaoTranslateResult.fromJSON(data.result.toString()) ;
+          var errorCode = result['errorCode']
           if (errorCode == '0') {
             this.translateResult = result.translation.toString()
             this.resultVoice = result.tSpeakUrl
             this.sourceVoice = result.speakUrl
+            this.basicExplains = result.translation
+            console.error(result.basic.toString())
+
+
+
           } else {
             this.translateResult = JSON.stringify(result)
             this.resultVoice = ''
@@ -235,8 +246,8 @@ struct Index {
           })
           Text(this.translateToName).margin(10).width('40%')
             .onClick(() => {
-              this.changeFromLanguageType = true;
-              this.changeToLanguageType = false;
+              this.changeFromLanguageType = false;
+              this.changeToLanguageType = true;
               this.selectLanguageDialogController.open()
             }).textAlign(TextAlign.Center)
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
@@ -245,6 +256,7 @@ struct Index {
 
 
       Text(this.translateResult).margin(10).padding(10)
+
       Text(this.sourceVoice).margin(10).padding(10)
       Text(this.resultVoice).margin(10).padding(10)
 
