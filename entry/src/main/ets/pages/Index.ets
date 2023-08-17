@@ -5,13 +5,14 @@ import prompt from '@ohos.promptAction';
 import router from '@ohos.router';
 import {  HttpUtil } from '../util/HttpUtil'
 import { TranslateLanguage,LanguageGroup } from '../model/TranslateResult'
+import {baidu_api_key,baidu_secret_key} from '../model/Config'
 
 //只能在UI页面使用，否则无法持久化数据
 PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
 PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
 PersistentStorage.PersistProp('baidu_api_key', '')
-PersistentStorage.PersistProp('baidu_secret_key', '')
-PersistentStorage.PersistProp('baidu_access_token', '')
+PersistentStorage.PersistProp('baidu_secret_key', baidu_api_key)
+PersistentStorage.PersistProp('baidu_access_token', baidu_secret_key)
 PersistentStorage.PersistProp('translate_type', 'immediately')
 
 

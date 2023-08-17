@@ -44,3 +44,4 @@ export class LanguageGroup {
   groupName: string
   languages: TranslateLanguage[]
 }
+
