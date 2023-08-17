@@ -2,41 +2,45 @@ import http from '@ohos.net.http';
 import util from '@ohos.util';
 import CryptoJS from '@ohos/crypto-js'
 import prompt from '@ohos.promptAction';
-import { YoudaoTranslateResult, TranslateLanguage, LanguageGroup } from '../model/TranslateResult';
 import router from '@ohos.router';
+import {  HttpUtil } from '../util/HttpUtil'
+import { TranslateLanguage,LanguageGroup } from '../model/TranslateResult'
 
 //只能在UI页面使用，否则无法持久化数据
-PersistentStorage.PersistProp('translate_from_name', '自动识别')
-PersistentStorage.PersistProp('translate_from_code', 'auto')
-PersistentStorage.PersistProp('translate_to_name', '英文')
-PersistentStorage.PersistProp('translate_to_code', 'en')
-PersistentStorage.PersistProp('youdao_app_id', '')
-PersistentStorage.PersistProp('youdao_secrite', '')
+PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
+PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
+PersistentStorage.PersistProp('baidu_api_key', '')
+PersistentStorage.PersistProp('baidu_secret_key', '')
+PersistentStorage.PersistProp('baidu_access_token', '')
 PersistentStorage.PersistProp('translate_type', 'immediately')
 
 
 @Entry
 @Component
 struct Index {
-  @State translateResult: string = '待翻译'
+  @State translation: string[] = ['待翻译']
   @State sourceVoice: string = ''
   @State resultVoice: string = ''
   @State inputContent: string = '';
-  @State basicExplains:string[]=[];
-
-  @StorageLink('translate_from_name') translateFromName: string = '自动识别'
-  @StorageLink('translate_from_code') translateFromCode: string = 'auto'
-  @StorageLink('translate_to_name') translateToName: string = '英文'
-  @StorageLink('translate_to_code') translateToCode: string = 'en'
-  @StorageLink('youdao_app_id') youdao_app_id: string = ''
-  @StorageLink('youdao_secrite') youdao_secrite: string = ''
+  @StorageLink('translate_from_name') translateFrom: TranslateLanguage = new TranslateLanguage('中文', 'zh')
+  @StorageLink('translate_to_name') translateTo: TranslateLanguage = new TranslateLanguage('英文', 'en')
+  @StorageLink('baidu_api_key') baidu_api_key: string = ''
+  @StorageLink('baidu_access_token') baidu_access_token: string = ''
+  @StorageLink('baidu_secret_key') baidu_secret_key: string = ''
   @StorageLink('translate_type') translate_type: string = 'immediately'
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
   private queryTimer: number = 0;
 
   aboutToAppear() {
-
+    HttpUtil.getAccessToken('cw1ZmFg6jvGrK0ZpBr1Tz94S', 'tEkdl2nGk7pM6dt9FETSNar9KZGaf0ay', (error, data) => {
+      if (error) {
+        prompt.showToast({ message: error.toString() })
+      } else {
+        console.error("获取 token 成功-->")
+        this.baidu_access_token = data.access_token
+      }
+    })
   }
 
   aboutToDisappear() {
@@ -50,12 +54,11 @@ struct Index {
 
   onAccept(selectLanguage: TranslateLanguage) {
     console.error('this is ?' + this)
-    if(this.changeFromLanguageType){
-      this.translateFromName = selectLanguage.name
-      this.translateFromCode = selectLanguage.code
-    }else if(this.changeToLanguageType){
-      this.translateToName = selectLanguage.name
-      this.translateToCode = selectLanguage.code
+    if (this.changeFromLanguageType) {
+      this.translateFrom = selectLanguage
+
+    } else if (this.changeToLanguageType) {
+      this.translateTo = selectLanguage
     }
 
     console.error('Callback when the second button is clicked')
@@ -79,75 +82,9 @@ struct Index {
     customStyle: true
   })
 
-  youdaoTranslate() {
-    console.error('调用翻译youdaoTranslate--> ' + this.inputContent)
 
-    let httpRequest = http.createHttp();
-    let salt = util.generateRandomUUID(false);
-    let currentTime = Math.round(new Date().getTime() / 1000)
-    let signStr = this.youdao_app_id + this.getInputForYoudaoSign() + salt + currentTime + this.youdao_secrite;
-
-
-    var sha256Result = CryptoJS.SHA256(signStr)
-
-
-    var q = encodeURIComponent(this.inputContent)
-
-
-    var params = `q=${q}&from=${this.translateFromCode}&to=${this.translateToCode}&appKey=${this.youdao_app_id}&salt=${salt}&sign=${sha256Result.toString()}&signType=v3&curtime=${currentTime}`
-
-
-    httpRequest.request(
-      // 填写HTTP请求的URL地址，可以带参数也可以不带参数。URL地址需要开发者自定义。请求的参数可以在extraData中指定
-      "https://openapi.youdao.com/api?" + params,
-      {
-        method: http.RequestMethod.GET, // 可选，默认为http.RequestMethod.GET
-        // 开发者根据自身业务需要添加header字段
-        header: {
-          'Content-Type': 'application/x-www-form-urlencoded; charset=utf-8'
-        },
-        // extraData: extraDate,
-        expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
-        usingCache: false, // 可选，默认为true
-        priority: 1, // 可选，默认为1
-        connectTimeout: 60000, // 可选，默认为60000ms
-        readTimeout: 60000, // 可选，默认为60000ms
-        usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
-      }, (err, data) => {
-      if (!err) {
-        console.error('翻译结果-->')
-        console.error(JSON.stringify(data.result.toString()))
-        if (data.responseCode == http.ResponseCode.OK) {
-          const result:YoudaoTranslateResult = YoudaoTranslateResult.fromJSON(data.result.toString()) ;
-          var errorCode = result['errorCode']
-          if (errorCode == '0') {
-            this.translateResult = result.translation.toString()
-            this.resultVoice = result.tSpeakUrl
-            this.sourceVoice = result.speakUrl
-            this.basicExplains = result.translation
-            console.error(result.basic.toString())
-
-
-
-          } else {
-            this.translateResult = JSON.stringify(result)
-            this.resultVoice = ''
-            this.sourceVoice = ''
-          }
-        } else {
-          this.translateResult = '出错啦'
-          this.sourceVoice = ''
-          this.resultVoice = ''
-        }
-
-      } else {
-        this.translateResult = JSON.stringify(err)
-        this.resultVoice = ''
-        this.sourceVoice = ''
-        httpRequest.destroy();
-      }
-    }
-    );
+  startTranslateByBaidu(){
+    HttpUtil.translate(this.translateFrom.code,this.translateTo.code,this.inputContent,this.baidu_access_token,(err,data)=>{});
   }
 
   getInputForYoudaoSign() {
@@ -186,7 +123,7 @@ struct Index {
               clearTimeout(this.queryTimer)
             }
             if (this.translate_type == 'immediately') {
-              this.queryTimer = setTimeout(this.youdaoTranslate.bind(this), 500)
+              this.queryTimer = setTimeout(this.startTranslateByBaidu.bind(this), 500)
             } else {
               console.error('需要点击发送按钮才会进行翻译')
             }
@@ -198,7 +135,7 @@ struct Index {
             console.error('isEdit-->' + isEdit)
           })
           .onSubmit((enterKeyType: EnterKeyType) => {
-            this.youdaoTranslate();
+            this.startTranslateByBaidu();
           })
         Image($r('app.media.menu'))
           .margin({ right: 10 })
@@ -230,7 +167,7 @@ struct Index {
 
 
         Row() {
-          Text(this.translateFromName).margin(10).width('40%')
+          Text(this.translateFrom.name).margin(10).width('40%')
             .onClick(() => {
               if (this.selectLanguageDialogController != undefined) {
                 this.changeFromLanguageType = true;
@@ -241,10 +178,9 @@ struct Index {
 
 
           Image($r("app.media.switch_language_positions")).width(23).height(20).onClick(() => {
-            [this.translateToCode, this.translateFromCode] = [this.translateFromCode, this.translateToCode];
-            [this.translateToName, this.translateFromName] = [this.translateFromName, this.translateToName];
+            [this.translateTo, this.translateFrom] = [this.translateFrom, this.translateTo];
           })
-          Text(this.translateToName).margin(10).width('40%')
+          Text(this.translateTo.name).margin(10).width('40%')
             .onClick(() => {
               this.changeFromLanguageType = false;
               this.changeToLanguageType = true;
@@ -254,15 +190,25 @@ struct Index {
 
       }.width('100%')
 
+      List() {
+        ForEach(this.translation, (translate: string) => {
+          ListItem() {
+            Row() {
+              Text(translate).padding(10).margin(10).backgroundColor(0XAAAAAA)
+              Text('语音').padding(10).margin(10).backgroundColor(0XAAAAAA).onClick(() => {
 
-      Text(this.translateResult).margin(10).padding(10)
+              })
+            }
+          }
+        })
+      }
 
-      Text(this.sourceVoice).margin(10).padding(10)
-      Text(this.resultVoice).margin(10).padding(10)
+
+      Text(this.sourceVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10)
+      Text(this.resultVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10)
 
     }
     .width('100%')
-
   }
 }
 
@@ -283,8 +229,8 @@ struct SelectLanguageList {
   confirm: (selectLanguage: TranslateLanguage) => void
   controller: CustomDialogController
   private data: LanguageGroup[] = [
-    new LanguageGroup('常用', [new TranslateLanguage('中文', 'zh-CHS'), new TranslateLanguage('英文', 'en'),]),
-    new LanguageGroup('全部', [new TranslateLanguage('中文', 'zh-CHS'), new TranslateLanguage('英文', 'en'), new TranslateLanguage('德语', 'de'), new TranslateLanguage('法语', 'fr'), new TranslateLanguage('日语', 'ja'), new TranslateLanguage('韩语', 'ko'),]),
+    new LanguageGroup('常用', [new TranslateLanguage('中文', 'zh'), new TranslateLanguage('英文', 'en'),]),
+    new LanguageGroup('全部', [new TranslateLanguage('中文', 'zh'), new TranslateLanguage('英文', 'en'), new TranslateLanguage('德语', 'de'), new TranslateLanguage('法语', 'fr'), new TranslateLanguage('日语', 'ja'), new TranslateLanguage('韩语', 'ko'),]),
   ]
 
   @Builder itemHead(text: string) {
@@ -339,7 +285,7 @@ struct SetUserPreferDialog {
   build() {
     Column() {
       Text('偏好设置').width('100%').fontColor(0X333333).fontSize(20).textAlign(TextAlign.Center)
-      Divider().margin({top:15})
+      Divider().margin({ top: 15 })
       Text('翻译时机').width('100%').fontSize(18).padding(10)
 
       Row() {
@@ -371,14 +317,15 @@ struct SetUserPreferDialog {
         Text('有道翻译')
 
 
-        Radio({ value: 'baidu', group: 'translate_api' }).enabled(false).onClick(()=>{
-          prompt.showToast({message:'正在紧急开发中'})
+        Radio({ value: 'baidu', group: 'translate_api' }).enabled(false).onClick(() => {
+          prompt.showToast({ message: '正在紧急开发中' })
         })
-        Text('百度翻译').onClick(()=>{
-          prompt.showToast({message:'正在紧急开发中'})
+        Text('百度翻译').onClick(() => {
+          prompt.showToast({ message: '正在紧急开发中' })
         })
       }.width('100%').padding(10)
-    }.padding(10)
+    }
+    .padding(10)
     .margin(15)
     .borderRadius(10)
     .backgroundColor(Color.White)
