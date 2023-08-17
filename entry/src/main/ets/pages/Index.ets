@@ -1,11 +1,9 @@
-import http from '@ohos.net.http';
-import util from '@ohos.util';
-import CryptoJS from '@ohos/crypto-js'
 import prompt from '@ohos.promptAction';
 import router from '@ohos.router';
-import {  HttpUtil } from '../util/HttpUtil'
-import { TranslateLanguage,LanguageGroup } from '../model/TranslateResult'
-import {baidu_api_key,baidu_secret_key} from '../model/Config'
+import media from '@ohos.multimedia.media';
+import { HttpUtil } from '../util/HttpUtil'
+import { BaiduTranslationResult, LanguageGroup, TranslateLanguage } from '../model/TranslateResult'
+import { baidu_api_key, baidu_secret_key } from '../model/Config'
 
 //只能在UI页面使用，否则无法持久化数据
 PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
@@ -32,6 +30,9 @@ struct Index {
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
   private queryTimer: number = 0;
+
+
+  private avPlayer = null;
 
   aboutToAppear() {
     HttpUtil.getAccessToken('cw1ZmFg6jvGrK0ZpBr1Tz94S', 'tEkdl2nGk7pM6dt9FETSNar9KZGaf0ay', (error, data) => {
@@ -83,9 +84,21 @@ struct Index {
     customStyle: true
   })
 
+  startTranslateByBaidu() {
+    if (this.inputContent && this.inputContent.length > 0) {
 
-  startTranslateByBaidu(){
-    HttpUtil.translate(this.translateFrom.code,this.translateTo.code,this.inputContent,this.baidu_access_token,(err,data)=>{});
+
+      HttpUtil.translate(this.translateFrom.code, this.translateTo.code, this.inputContent, this.baidu_access_token, (err: Object, data: BaiduTranslationResult) => {
+        if (err) {
+
+        } else {
+          this.translation = data.result.result
+          this.sourceVoice = data.result.src_tts
+          this.resultVoice = data.result.dst_tts
+        }
+      });
+    }
+
   }
 
   getInputForYoudaoSign() {
@@ -190,23 +203,46 @@ struct Index {
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
 
       }.width('100%')
+      Text(this.sourceVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10).onClick(()=>{
+        console.error('播放');
+        if(this.avPlayer == undefined){
+          media.createAVPlayer().then((video) => {
+            if (video != null) {
+              this. avPlayer = video;
+              console.error('createAVPlayer success');
+              this. avPlayer.url = this.sourceVoice
+              this.avPlayer.prepare().then(() => {
+                console.error('AVPlayer prepare succeeded.');
+                console.error('AVPlayer state prepared called.');
+                this.avPlayer.play(); // 调用播放接口开始播放
+              }, (err) => {
+                console.error(`Invoke prepare failed, code is ${err.code}, message is ${err.message}`);
+              });
+
+            } else {
+              console.error('createAVPlayer fail');
+            }
+          }).catch((error) => {
+            console.error(`AVPlayer catchCallback, error message:${error.message}`);
+          });
+        }
+
+
+      })
+      Text(this.resultVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10)
 
       List() {
         ForEach(this.translation, (translate: string) => {
           ListItem() {
             Row() {
-              Text(translate).padding(10).margin(10).backgroundColor(0XAAAAAA)
-              Text('语音').padding(10).margin(10).backgroundColor(0XAAAAAA).onClick(() => {
-
-              })
+              Text(translate).padding(10).margin(10).backgroundColor(0XAAAAAA).fontColor(Color.White)
             }
           }
         })
-      }
+      }.backgroundColor(Color.Gray)
 
 
-      Text(this.sourceVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10)
-      Text(this.resultVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10)
+
 
     }
     .width('100%')
@@ -307,24 +343,8 @@ struct SetUserPreferDialog {
             }
           })
         Text('点击确认')
-
-
       }.width('100%').justifyContent(FlexAlign.Start).padding(10)
 
-      Divider()
-      Text('翻译接口').width('100%').fontSize(18).padding(10)
-      Row() {
-        Radio({ value: 'youdao', group: 'translate_api' }).checked(true)
-        Text('有道翻译')
-
-
-        Radio({ value: 'baidu', group: 'translate_api' }).enabled(false).onClick(() => {
-          prompt.showToast({ message: '正在紧急开发中' })
-        })
-        Text('百度翻译').onClick(() => {
-          prompt.showToast({ message: '正在紧急开发中' })
-        })
-      }.width('100%').padding(10)
     }
     .padding(10)
     .margin(15)
@@ -348,30 +368,20 @@ struct SetApiInfoDialog {
     Column() {
 
       Row() {
-        Text('如何申请')
+        Text('如何申请：百度翻译-词典版')
         Image($r('app.media.tip')).width(20).height(20)
-      }.justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center)
-      .bindMenu([
-        {
-          value: "有道翻译",
-          action: () => {
-            router.pushUrl({ url: 'pages/ApplyTranslateKey', params: { 'url': 'https://ai.youdao.com/doc.s#guide' } })
-          }
-        }, {
-        value: "百度翻译",
-        action: () => {
+      }.justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center).onClick(() => {
+        router.pushUrl({
+          url: 'pages/ApplyTranslateKey',
+          params: { 'url': 'https://ai.baidu.com/ai-doc/MT/nkqrzmbpc' }
+        })
+      })
 
-          router.pushUrl({
-            url: 'pages/ApplyTranslateKey',
-            params: { 'url': 'https://fanyi-api.baidu.com/product/113' }
-          })
-        }
-      },])
 
-      TextInput({ placeholder: '请输入申请的应用id' }).onChange((value) => {
+      TextInput({ placeholder: '请输入申请的API Key' }).onChange((value) => {
         this.appid = value.toString()
       }).margin(10).padding(10).borderRadius(10)
-      TextInput({ placeholder: '请输入申请的应用密钥' })
+      TextInput({ placeholder: '请输入申请的Secret Key' })
         .onChange((value) => {
           this.appKey = value.toString()
         }).margin(10).padding(10).borderRadius(10)

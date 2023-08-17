@@ -1,12 +1,8 @@
 export class BaiduTranslationResult{
   log_id:number
-  result:TranslationResult
-}
-
-export class TranslationResult{
+  result:TransResult
   from:string
   to:string
-  trans_result:TransResult[]
 }
 
 export class TransResult{
@@ -15,6 +11,7 @@ export class TransResult{
   src:string
   src_tts:string
   dict:Dict
+  result:string[]
 
 }
 export class Dict{
