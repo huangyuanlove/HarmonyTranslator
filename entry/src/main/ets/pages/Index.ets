@@ -30,12 +30,54 @@ struct Index {
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
   private queryTimer: number = 0;
-
-
   private avPlayer = null;
+  setAVPlayerStateChange() {
+    if (this.avPlayer != undefined) {
+      this.avPlayer.on('stateChange', async (state, reason) => {
+        switch (state) {
+          case 'idle':
+            console.error('state idle called')
+            break;
+          case 'initialized':
+            console.error('initialized prepared called')
+            this.avPlayer.prepare()
+            break;
+          case 'prepared':
+            console.error('state prepared called')
+            this.avPlayer.play()
+            break;
+          case 'playing':
+            console.error('state playing called')
+            break;
+          case 'paused':
+            console.error('state paused called')
+            break;
+          case 'completed':
+            console.error('state completed called')
+            this.avPlayer.reset()
+            break;
+          case 'stopped':
+            console.error('state stopped called')
+            break;
+          case 'released':
+            console.error('state released called')
+            break;
+          case 'error':
+            console.error('state error called')
+            this.avPlayer.reset()
+            break;
+          default:
+            console.info('unkown state :' + state)
+            break;
+        }
+      })
+    }
+  }
 
   aboutToAppear() {
-    HttpUtil.getAccessToken('cw1ZmFg6jvGrK0ZpBr1Tz94S', 'tEkdl2nGk7pM6dt9FETSNar9KZGaf0ay', (error, data) => {
+    let ctx = this;
+
+    HttpUtil.getAccessToken(baidu_api_key, baidu_secret_key, (error, data) => {
       if (error) {
         prompt.showToast({ message: error.toString() })
       } else {
@@ -43,6 +85,19 @@ struct Index {
         this.baidu_access_token = data.access_token
       }
     })
+
+    media.createAVPlayer((error, video) => {
+
+      if (video != null) {
+        ctx.avPlayer = video;
+        console.error(`createAVPlayer success   ${JSON.stringify(ctx)}`);
+        console.error('createAVPlayer success', JSON.stringify(ctx));
+        ctx.setAVPlayerStateChange()
+      } else {
+        console.error(`createAVPlayer fail, error message:${error.message}`);
+      }
+    });
+
   }
 
   aboutToDisappear() {
@@ -90,7 +145,7 @@ struct Index {
 
       HttpUtil.translate(this.translateFrom.code, this.translateTo.code, this.inputContent, this.baidu_access_token, (err: Object, data: BaiduTranslationResult) => {
         if (err) {
-
+          this.translation = [err.toString()]
         } else {
           this.translation = data.result.result
           this.sourceVoice = data.result.src_tts
@@ -203,33 +258,39 @@ struct Index {
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
 
       }.width('100%')
-      Text(this.sourceVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10).onClick(()=>{
-        console.error('播放');
-        if(this.avPlayer == undefined){
-          media.createAVPlayer().then((video) => {
-            if (video != null) {
-              this. avPlayer = video;
-              console.error('createAVPlayer success');
-              this. avPlayer.url = this.sourceVoice
-              this.avPlayer.prepare().then(() => {
-                console.error('AVPlayer prepare succeeded.');
-                console.error('AVPlayer state prepared called.');
-                this.avPlayer.play(); // 调用播放接口开始播放
-              }, (err) => {
-                console.error(`Invoke prepare failed, code is ${err.code}, message is ${err.message}`);
-              });
 
-            } else {
-              console.error('createAVPlayer fail');
-            }
-          }).catch((error) => {
-            console.error(`AVPlayer catchCallback, error message:${error.message}`);
-          });
-        }
+      Text(this.sourceVoice)
+        .margin(10)
+        .padding(10)
+        .backgroundColor(Color.Gray)
+        .borderRadius(10)
+        .onClick(() => {
+          console.error('播放');
+          if (this.avPlayer != undefined) {
+            console.error('设置 url')
+            this.avPlayer.reset()
+            this.avPlayer.url = this.sourceVoice
+          }else{
+            console.error('this.avPlayer 为空');
+          }
 
 
-      })
-      Text(this.resultVoice).margin(10).padding(10).backgroundColor(Color.Gray).borderRadius(10)
+        })
+      Text(this.resultVoice)
+        .margin(10)
+        .padding(10)
+        .backgroundColor(Color.Gray)
+        .borderRadius(10)
+        .onClick(() => {
+          console.error('播放');
+          if (this.avPlayer != undefined) {
+            console.error('设置 url');
+            this.avPlayer.reset()
+            this.avPlayer.url = this.resultVoice
+          }else{
+            console.error('this.avPlayer 为空');
+          }
+        })
 
       List() {
         ForEach(this.translation, (translate: string) => {
@@ -240,9 +301,6 @@ struct Index {
           }
         })
       }.backgroundColor(Color.Gray)
-
-
-
 
     }
     .width('100%')

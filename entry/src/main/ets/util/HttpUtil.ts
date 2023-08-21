@@ -60,8 +60,6 @@ export class HttpUtil {
       readTimeout: 60000, // 可选，默认为60000ms
       usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
     },
-
-
       (err, data) => {
         if (err) {
           console.error(JSON.stringify(err).toString())
@@ -69,6 +67,13 @@ export class HttpUtil {
         } else {
 
           var rootJson = JSON.parse(data.result.toString());
+
+          var errorCode = rootJson['error_code']
+          var errorMsg = rootJson['error_msg']
+          if(errorCode !=undefined){
+            callback(`errorCode:${errorCode} ,errorMsg:${errorMsg}`,null)
+            return
+          }
           var tmp: BaiduTranslationResult = new BaiduTranslationResult();
           tmp.log_id = rootJson['log_id']
           var resultJSON = rootJson['result']
