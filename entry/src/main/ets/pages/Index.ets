@@ -17,7 +17,7 @@ PersistentStorage.PersistProp('translate_type', 'immediately')
 @Entry
 @Component
 struct Index {
-  @State translation: string[] = ['待翻译']
+  @State translation: string[] = []
   @State sourceVoice: string = ''
   @State resultVoice: string = ''
   @State inputContent: string = '';
@@ -258,39 +258,43 @@ struct Index {
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
 
       }.width('100%')
+      if(this.sourceVoice.length >0){
+        Text('被翻译文字语音')
+          .margin(10)
+          .padding(10)
+          .backgroundColor(Color.Gray)
+          .borderRadius(10)
+          .onClick(() => {
+            console.error('播放');
+            if (this.avPlayer != undefined) {
+              console.error('设置 url')
+              this.avPlayer.reset()
+              this.avPlayer.url = this.sourceVoice
+            }else{
+              console.error('this.avPlayer 为空');
+            }
+          })
+      }
 
-      Text(this.sourceVoice)
-        .margin(10)
-        .padding(10)
-        .backgroundColor(Color.Gray)
-        .borderRadius(10)
-        .onClick(() => {
-          console.error('播放');
-          if (this.avPlayer != undefined) {
-            console.error('设置 url')
-            this.avPlayer.reset()
-            this.avPlayer.url = this.sourceVoice
-          }else{
-            console.error('this.avPlayer 为空');
-          }
 
+      if(this.resultVoice.length >0){
+        Text("翻译结果语音")
+          .margin(10)
+          .padding(10)
+          .backgroundColor(Color.Gray)
+          .borderRadius(10)
+          .onClick(() => {
+            console.error('播放');
+            if (this.avPlayer != undefined) {
+              console.error('设置 url');
+              this.avPlayer.reset()
+              this.avPlayer.url = this.resultVoice
+            }else{
+              console.error('this.avPlayer 为空');
+            }
+          })
+      }
 
-        })
-      Text(this.resultVoice)
-        .margin(10)
-        .padding(10)
-        .backgroundColor(Color.Gray)
-        .borderRadius(10)
-        .onClick(() => {
-          console.error('播放');
-          if (this.avPlayer != undefined) {
-            console.error('设置 url');
-            this.avPlayer.reset()
-            this.avPlayer.url = this.resultVoice
-          }else{
-            console.error('this.avPlayer 为空');
-          }
-        })
 
       List() {
         ForEach(this.translation, (translate: string) => {
