@@ -5,10 +5,11 @@
 ### 技术说明
 
 #### 翻译api 
-有道智云文本翻译，产品文档在这里[有道翻译](https://ai.youdao.com/DOCSIRMA/html/trans/api/wbfy/index.html),链接是：https://ai.youdao.com/DOCSIRMA/html/trans/api/wbfy/index.html
-使用者可以自己注册账号，获取到 appID和 appKey 进行使用
+当前使用的是百度 AI 开放平台--> 机器翻译--> 文本翻译-词典版
+产品文档在这里：[百度翻译词典版] (https://ai.baidu.com/ai-doc/MT/nkqrzmbpc) 链接是 https://ai.baidu.com/ai-doc/MT/nkqrzmbpc
 
-后续会支持百度翻译的 api：产品文档在这里[百度翻译-词典版](https://ai.baidu.com/ai-doc/MT/nkqrzmbpc?_=1691995011471)，链接是 https://ai.baidu.com/ai-doc/MT/nkqrzmbpc?_=1691995011471
+词典版在文本翻译-通用版的基础上，提供词典资源和语音合成资源。但是没有免费额度，需要自己充值。
+后续会提供文本翻译通用版 和 翻译开放平台 api 的支持
 
 #### 状态管理
 
