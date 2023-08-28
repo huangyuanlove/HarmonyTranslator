@@ -1,16 +1,17 @@
 import prompt from '@ohos.promptAction';
 import router from '@ohos.router';
-import media from '@ohos.multimedia.media';
+
 import { HttpUtil } from '../util/HttpUtil'
 import { BaiduTranslationResult, LanguageGroup, TranslateLanguage } from '../model/TranslateResult'
-import { baidu_api_key, baidu_secret_key } from '../model/Config'
-
+import { baidu_machine_translation_general_api_key, baidu_machine_translation_general_secret_key } from '../model/Config'
+import { AVPlayerHelper } from '../model/AVPlayerHelper';
+import { MainPageTopSwiper } from '../view/MainPageTopSwiper';
 //只能在UI页面使用，否则无法持久化数据
 PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
 PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
 PersistentStorage.PersistProp('baidu_api_key', '')
-PersistentStorage.PersistProp('baidu_secret_key', baidu_api_key)
-PersistentStorage.PersistProp('baidu_access_token', baidu_secret_key)
+PersistentStorage.PersistProp('baidu_secret_key', baidu_machine_translation_general_api_key)
+PersistentStorage.PersistProp('baidu_access_token', baidu_machine_translation_general_secret_key)
 PersistentStorage.PersistProp('translate_type', 'immediately')
 
 
@@ -30,54 +31,13 @@ struct Index {
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
   private queryTimer: number = 0;
-  private avPlayer = null;
-  setAVPlayerStateChange() {
-    if (this.avPlayer != undefined) {
-      this.avPlayer.on('stateChange', async (state, reason) => {
-        switch (state) {
-          case 'idle':
-            console.error('state idle called')
-            break;
-          case 'initialized':
-            console.error('initialized prepared called')
-            this.avPlayer.prepare()
-            break;
-          case 'prepared':
-            console.error('state prepared called')
-            this.avPlayer.play()
-            break;
-          case 'playing':
-            console.error('state playing called')
-            break;
-          case 'paused':
-            console.error('state paused called')
-            break;
-          case 'completed':
-            console.error('state completed called')
-            this.avPlayer.reset()
-            break;
-          case 'stopped':
-            console.error('state stopped called')
-            break;
-          case 'released':
-            console.error('state released called')
-            break;
-          case 'error':
-            console.error('state error called')
-            this.avPlayer.reset()
-            break;
-          default:
-            console.info('unkown state :' + state)
-            break;
-        }
-      })
-    }
-  }
+
+  private avPlayerHelper:AVPlayerHelper
 
   aboutToAppear() {
-    let ctx = this;
+    this.avPlayerHelper = new AVPlayerHelper()
 
-    HttpUtil.getAccessToken(baidu_api_key, baidu_secret_key, (error, data) => {
+    HttpUtil.getAccessToken(this.baidu_api_key, this.baidu_secret_key, (error, data) => {
       if (error) {
         prompt.showToast({ message: error.toString() })
       } else {
@@ -86,17 +46,7 @@ struct Index {
       }
     })
 
-    media.createAVPlayer((error, video) => {
 
-      if (video != null) {
-        ctx.avPlayer = video;
-        console.error(`createAVPlayer success   ${JSON.stringify(ctx)}`);
-        console.error('createAVPlayer success', JSON.stringify(ctx));
-        ctx.setAVPlayerStateChange()
-      } else {
-        console.error(`createAVPlayer fail, error message:${error.message}`);
-      }
-    });
 
   }
 
@@ -175,6 +125,8 @@ struct Index {
 
   build() {
     Column() {
+      MainPageTopSwiper()
+
       Flex({ alignItems: ItemAlign.Center }) {
         TextInput({ placeholder: $r('app.string.text_to_be_translated') })
           .layoutWeight(1)
@@ -258,7 +210,8 @@ struct Index {
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
 
       }.width('100%')
-      if(this.sourceVoice.length >0){
+
+      if (this.sourceVoice.length > 0) {
         Text('被翻译文字语音')
           .margin(10)
           .padding(10)
@@ -266,18 +219,12 @@ struct Index {
           .borderRadius(10)
           .onClick(() => {
             console.error('播放');
-            if (this.avPlayer != undefined) {
-              console.error('设置 url')
-              this.avPlayer.reset()
-              this.avPlayer.url = this.sourceVoice
-            }else{
-              console.error('this.avPlayer 为空');
-            }
+            this.avPlayerHelper.playWithUrl(this.sourceVoice)
           })
       }
 
 
-      if(this.resultVoice.length >0){
+      if (this.resultVoice.length > 0) {
         Text("翻译结果语音")
           .margin(10)
           .padding(10)
@@ -285,13 +232,7 @@ struct Index {
           .borderRadius(10)
           .onClick(() => {
             console.error('播放');
-            if (this.avPlayer != undefined) {
-              console.error('设置 url');
-              this.avPlayer.reset()
-              this.avPlayer.url = this.resultVoice
-            }else{
-              console.error('this.avPlayer 为空');
-            }
+            this.avPlayerHelper.playWithUrl(this.resultVoice)
           })
       }
 

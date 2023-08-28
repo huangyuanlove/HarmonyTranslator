@@ -10,15 +10,9 @@ export class TransResult{
   dst_tts:string
   src:string
   src_tts:string
-  dict:Dict
-  result:string[]
 
 }
-export class Dict{
-  lang:string
 
-
-}
 
 
 export class TranslateLanguage {
