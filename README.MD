@@ -5,11 +5,11 @@
 ### 技术说明
 
 #### 翻译api 
-当前使用的是百度 AI 开放平台--> 机器翻译--> 文本翻译-词典版
-产品文档在这里：[百度翻译词典版] (https://ai.baidu.com/ai-doc/MT/nkqrzmbpc) 链接是 https://ai.baidu.com/ai-doc/MT/nkqrzmbpc
+当前使用的是百度 AI 开放平台--> 机器翻译--> 文本翻译-通用版
+产品文档在这里：[百度翻译通用版] (https://ai.baidu.com/ai-doc/MT/4kqryjku9) 链接是 https://ai.baidu.com/ai-doc/MT/4kqryjku9
 
-词典版在文本翻译-通用版的基础上，提供词典资源和语音合成资源。但是没有免费额度，需要自己充值。
-后续会提供文本翻译通用版 和 翻译开放平台 api 的支持
+
+后续会提供 翻译开放平台 api 和有道智云的 api 支持
 
 #### 状态管理
 
