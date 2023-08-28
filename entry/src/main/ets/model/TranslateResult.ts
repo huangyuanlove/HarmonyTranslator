@@ -1,15 +1,13 @@
-export class BaiduTranslationResult{
+export class BaiduMachineTranslationResult{
   log_id:number
-  result:TransResult
+  result:BaiduMachineTransResult[]
   from:string
   to:string
 }
 
-export class TransResult{
+export class BaiduMachineTransResult{
   dst:string
-  dst_tts:string
   src:string
-  src_tts:string
 
 }
 

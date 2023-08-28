@@ -2,16 +2,16 @@ import prompt from '@ohos.promptAction';
 import router from '@ohos.router';
 
 import { HttpUtil } from '../util/HttpUtil'
-import { BaiduTranslationResult, LanguageGroup, TranslateLanguage } from '../model/TranslateResult'
+import { BaiduMachineTranslationResult, LanguageGroup, TranslateLanguage } from '../model/TranslateResult'
 import { baidu_machine_translation_general_api_key, baidu_machine_translation_general_secret_key } from '../model/Config'
 import { AVPlayerHelper } from '../model/AVPlayerHelper';
 import { MainPageTopSwiper } from '../view/MainPageTopSwiper';
 //只能在UI页面使用，否则无法持久化数据
 PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
 PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
-PersistentStorage.PersistProp('baidu_api_key', '')
-PersistentStorage.PersistProp('baidu_secret_key', baidu_machine_translation_general_api_key)
-PersistentStorage.PersistProp('baidu_access_token', baidu_machine_translation_general_secret_key)
+PersistentStorage.PersistProp('baidu_api_key', baidu_machine_translation_general_api_key)
+PersistentStorage.PersistProp('baidu_secret_key', baidu_machine_translation_general_secret_key)
+PersistentStorage.PersistProp('baidu_access_token', '')
 PersistentStorage.PersistProp('translate_type', 'immediately')
 
 
@@ -25,8 +25,8 @@ struct Index {
   @StorageLink('translate_from_name') translateFrom: TranslateLanguage = new TranslateLanguage('中文', 'zh')
   @StorageLink('translate_to_name') translateTo: TranslateLanguage = new TranslateLanguage('英文', 'en')
   @StorageLink('baidu_api_key') baidu_api_key: string = ''
-  @StorageLink('baidu_access_token') baidu_access_token: string = ''
   @StorageLink('baidu_secret_key') baidu_secret_key: string = ''
+  @StorageLink('baidu_access_token') baidu_access_token: string = ''
   @StorageLink('translate_type') translate_type: string = 'immediately'
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
@@ -35,10 +35,11 @@ struct Index {
   private avPlayerHelper:AVPlayerHelper
 
   aboutToAppear() {
-    this.avPlayerHelper = new AVPlayerHelper()
+    this.avPlayerHelper = AVPlayerHelper.instance;
 
     HttpUtil.getAccessToken(this.baidu_api_key, this.baidu_secret_key, (error, data) => {
       if (error) {
+        console.error("获取 token 失败-->")
         prompt.showToast({ message: error.toString() })
       } else {
         console.error("获取 token 成功-->")
@@ -93,13 +94,11 @@ struct Index {
     if (this.inputContent && this.inputContent.length > 0) {
 
 
-      HttpUtil.translate(this.translateFrom.code, this.translateTo.code, this.inputContent, this.baidu_access_token, (err: Object, data: BaiduTranslationResult) => {
+      HttpUtil.translate(this.translateFrom.code, this.translateTo.code, this.inputContent, this.baidu_access_token, (err: Object, data: BaiduMachineTranslationResult) => {
         if (err) {
           this.translation = [err.toString()]
         } else {
-          this.translation = data.result.result
-          this.sourceVoice = data.result.src_tts
-          this.resultVoice = data.result.dst_tts
+
         }
       });
     }

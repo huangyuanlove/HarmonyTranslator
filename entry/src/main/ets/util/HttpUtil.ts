@@ -1,5 +1,5 @@
 import http from '@ohos.net.http';
-import { BaiduTranslationResult, Dict, TransResult } from '../model/TranslateResult'
+import { BaiduMachineTranslationResult, BaiduMachineTransResult } from '../model/TranslateResult';
 
 export class HttpUtil {
   static getAccessToken(apiKey: string, secretKey: String, callback: OnGetAccessTokenCallback) {
@@ -45,7 +45,7 @@ export class HttpUtil {
     console.error(`from=${from}  to=${to}  q=${query}  token=${token}`)
 
     let httpRequest = http.createHttp();
-    httpRequest.request('https://aip.baidubce.com/rpc/2.0/mt/texttrans-with-dict/v1?access_token=' + token, {
+    httpRequest.request('https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_token=' + token, {
       method: http.RequestMethod.POST,
       header: { 'Content-Type': 'application/json;charset=utf-8' },
       extraData: {
@@ -74,35 +74,25 @@ export class HttpUtil {
             callback(`errorCode:${errorCode} ,errorMsg:${errorMsg}`,null)
             return
           }
-          var tmp: BaiduTranslationResult = new BaiduTranslationResult();
+          var tmp: BaiduMachineTranslationResult = new BaiduMachineTranslationResult();
           tmp.log_id = rootJson['log_id']
           var resultJSON = rootJson['result']
           tmp.from = resultJSON['from']
           tmp.to = resultJSON['to']
+
           var trans_result_arr: JSON [] = resultJSON['trans_result']
           if (trans_result_arr && trans_result_arr.length > 0) {
-            var trans_result = trans_result_arr[0]
-            var transResult: TransResult = new TransResult();
-            transResult.dst = trans_result['dst']
-            transResult.dst_tts = trans_result['dst_tts']
-            transResult.src = trans_result['src']
-            transResult.src_tts = trans_result['src_tts']
-            var dictJSON:JSON = JSON.parse(trans_result['dict'])
+            tmp.result = [];
+            trans_result_arr.forEach(trans_result=>{
+              var transResult: BaiduMachineTransResult = new BaiduMachineTransResult();
+              transResult.dst = trans_result['dst']
+              transResult.src = trans_result['src']
+              tmp.result.push(transResult);
+            })
 
-            if (dictJSON) {
 
-              var wordResultJSON:JSON = dictJSON['word_result']
-              if (wordResultJSON) {
-                var simpleMeansJSON:JSON = wordResultJSON['simple_means']
-                if (simpleMeansJSON) {
-                  transResult.result = simpleMeansJSON['word_means']
-                }
-              }
 
-            }
-            var dict: Dict = new Dict();
-            transResult.dict = dict
-            tmp.result = transResult;
+
 
           }
           callback(err, tmp)
@@ -121,7 +111,7 @@ export interface OnGetAccessTokenCallback {
 }
 
 export interface OnTranslationCallback {
-  (error: Object, data: BaiduTranslationResult)
+  (error: Object, data: BaiduMachineTranslationResult)
 }
 
 export class AccessTokenResult {

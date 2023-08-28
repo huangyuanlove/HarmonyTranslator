@@ -1,7 +1,6 @@
-import AVPlayer from '@ohos.multimedia.media'
 import media from '@ohos.multimedia.media';
 export class AVPlayerHelper {
-  constructor() {
+  private constructor() {
 
 
     media.createAVPlayer((error, video) => {
@@ -15,6 +14,9 @@ export class AVPlayerHelper {
       }
     });
   }
+
+  public static instance: AVPlayerHelper = new AVPlayerHelper();
+
 
   private avPlayer;
   setAVPlayerStateChange() {

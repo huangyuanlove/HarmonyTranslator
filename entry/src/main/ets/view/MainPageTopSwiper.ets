@@ -20,20 +20,6 @@ export struct MainPageTopSwiper {
         }
       }.cardContainerStyle()
 
-      Column() {
-        Text("百度机器翻译：文本翻译-词典版").titleStyle()
-
-        Row() {
-          Text("链接：https://ai.baidu.com/ai-doc/MT/nkqrzmbpc")
-          Text("复制")
-          Text("访问").onClick(() => {
-            router.pushUrl({
-              url: 'pages/ApplyTranslateKey',
-              params: { 'url': 'https://ai.baidu.com/ai-doc/MT/nkqrzmbpc' }
-            })
-          })
-        }
-      }.cardContainerStyle()
 
       Column() {
         Text("百度机器翻译：文本翻译-通用版").titleStyle()
