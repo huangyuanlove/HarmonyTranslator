@@ -1,16 +1,17 @@
-export class BaiduMachineTranslationResult{
-  log_id:number
-  result:BaiduMachineTransResult[]
+export class TranslationResult{
+  query:string
+  translations: TranslationGroup[]
   from:string
   to:string
-}
-
-export class BaiduMachineTransResult{
-  dst:string
-  src:string
 
 }
 
+export class TranslationGroup{
+  apiName:string
+  dst:string[]
+  error:string
+  log_id:number
+}
 
 
 export class TranslateLanguage {

@@ -1,0 +1,9 @@
+export enum TranslationAPI{
+  BAIDU_GENERAL,
+  BAIDU_MACHINE_GENERAL,
+  YOUDAO_GENERAL
+}
+export enum TTS{
+  BAIDU_TTS,
+  YOUDAO_TTS
+}

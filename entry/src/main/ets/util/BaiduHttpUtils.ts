@@ -1,7 +1,7 @@
 import http from '@ohos.net.http';
-import { BaiduMachineTranslationResult, BaiduMachineTransResult } from '../model/TranslateResult';
-
-export class HttpUtil {
+import { TranslationGroup } from '../model/TranslateResult';
+import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback } from './CommonCallback';
+export class BaiduHttpUtil {
   static getAccessToken(apiKey: string, secretKey: String, callback: OnGetAccessTokenCallback) {
     var url: string = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`
     let httpRequest = http.createHttp();
@@ -40,7 +40,7 @@ export class HttpUtil {
 
   }
 
-  static translate(from: string, to: string, query: string, token: string, callback: OnTranslationCallback) {
+  static translateByMachineGeneral(from: string, to: string, query: string, token: string, callback: OnTranslationCallback) {
 
     console.error(`from=${from}  to=${to}  q=${query}  token=${token}`)
 
@@ -61,60 +61,41 @@ export class HttpUtil {
       usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
     },
       (err, data) => {
+
+        var tmp: TranslationGroup = new TranslationGroup();
+        tmp.apiName = '百度机器翻译词典版'
+        tmp.log_id = rootJson['log_id']
+
+
         if (err) {
-          console.error(JSON.stringify(err).toString())
-          callback(err, null)
+          tmp.error = JSON.stringify(err).toString();
+          callback(tmp)
         } else {
 
           var rootJson = JSON.parse(data.result.toString());
 
           var errorCode = rootJson['error_code']
           var errorMsg = rootJson['error_msg']
-          if(errorCode !=undefined){
-            callback(`errorCode:${errorCode} ,errorMsg:${errorMsg}`,null)
+          if (errorCode != undefined) {
+            tmp.error = `errorCode:${errorCode} ,errorMsg:${errorMsg}`
+            callback(tmp)
             return
           }
-          var tmp: BaiduMachineTranslationResult = new BaiduMachineTranslationResult();
-          tmp.log_id = rootJson['log_id']
+
           var resultJSON = rootJson['result']
-          tmp.from = resultJSON['from']
-          tmp.to = resultJSON['to']
 
           var trans_result_arr: JSON [] = resultJSON['trans_result']
           if (trans_result_arr && trans_result_arr.length > 0) {
-            tmp.result = [];
-            trans_result_arr.forEach(trans_result=>{
-              var transResult: BaiduMachineTransResult = new BaiduMachineTransResult();
-              transResult.dst = trans_result['dst']
-              transResult.src = trans_result['src']
-              tmp.result.push(transResult);
+            tmp.dst = [];
+            trans_result_arr.forEach(trans_result => {
+              tmp.dst.push(trans_result['dst']);
             })
-
-
-
-
-
           }
-          callback(err, tmp)
+          callback(tmp)
         }
 
       }
 
     )
   }
-}
-
-
-export interface OnGetAccessTokenCallback {
-
-  (error: Object, data: AccessTokenResult): void;
-}
-
-export interface OnTranslationCallback {
-  (error: Object, data: BaiduMachineTranslationResult)
-}
-
-export class AccessTokenResult {
-  access_token: string
-  expires_in: number
 }
