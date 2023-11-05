@@ -1,14 +1,14 @@
 {
-  "name": "translator",
-  "version": "1.0.0",
-  "description": "Please describe the basic information.",
-  "main": "",
-  "author": "",
   "license": "",
-  "dependencies": {
-    "@ohos/crypto-js": "^2.0.1"
-  },
   "devDependencies": {
     "@ohos/hypium": "1.0.6"
+  },
+  "author": "",
+  "name": "translator",
+  "description": "Please describe the basic information.",
+  "main": "",
+  "version": "1.0.0",
+  "dependencies": {
+    "@ohos/crypto-js": "^2.0.1"
   }
 }

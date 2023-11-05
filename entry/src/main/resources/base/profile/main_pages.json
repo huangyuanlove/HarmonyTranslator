@@ -1,6 +1,7 @@
 {
   "src": [
     "pages/Index",
-    "pages/ApplyTranslateKey"
+    "pages/ApplyTranslateKey",
+    "pages/SettingsPage"
   ]
 }

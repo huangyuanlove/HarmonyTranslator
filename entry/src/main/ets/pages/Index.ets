@@ -14,6 +14,7 @@ import { TranslationResultView } from '../view/TranslationResultView';
 import SelectLanguageDialog from '../dialog/SelectLanguageDialog';
 import SetApiInfoDialog from '../dialog/SetApiInfoDialog';
 import SetUserPreferDialog from '../dialog/SetUserPreferDialog';
+import router from '@ohos.router';
 //只能在UI页面使用，否则无法持久化数据
 PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
 PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
@@ -42,10 +43,10 @@ struct Index {
   aboutToAppear() {
     this.translation = new TranslationResult()
 
-
+    console.error("----------------->" + this.baidu_api_key +"-----" + this.baidu_secret_key)
     BaiduHttpUtil.getAccessToken(this.baidu_api_key, this.baidu_secret_key, (error, data) => {
       if (error) {
-        console.error("获取 token 失败-->")
+        console.error("获取 token 失败-->" + JSON.stringify(error))
         prompt.showToast({ message: error.toString() })
       } else {
         console.error("获取 token 成功-->")
@@ -124,14 +125,14 @@ struct Index {
 
   build() {
     Column() {
-      MainPageTopSwiper()
+
 
       Flex({ alignItems: ItemAlign.Center }) {
         TextInput({ placeholder: $r('app.string.text_to_be_translated') })
           .layoutWeight(1)
           .margin(10)
           .padding(10)
-          .backgroundColor(Color.Gray)
+          .backgroundColor(0xE5E5E5)
           .borderRadius(10)
           .fontColor(Color.White)
           .onChange((value) => {
@@ -152,29 +153,10 @@ struct Index {
           .onSubmit(() => {
             this.startTranslate();
           })
-        Image($r('app.media.menu'))
-          .margin({ right: 10 })
-          .width(40)
-          .height(40)
-          .bindMenu([
-            {
-              value: "设置key",
-              action: () => {
-                if (this.setAppInfoDialogController != undefined) {
-                  this.setAppInfoDialogController.open()
-                }
-              }
-            },
-            {
-              value: "偏好设置",
-              action: () => {
-                if (this.setUserPreferDialogController != undefined) {
-                  this.setUserPreferDialogController.open()
 
-                }
-              }
-            }
-          ])
+        Image($r('app.media.setting')).width(24).height(24).margin(15).onClick(()=>{
+          router.pushUrl({url:'pages/SettingsPage'})
+        })
       }
 
 
@@ -200,9 +182,10 @@ struct Index {
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
       }.width('100%')
 
-      TranslationResultView()
+      TranslationResultView().layoutWeight(1)
+      MainPageTopSwiper()
 
     }
-    .width('100%')
+    .width('100%').padding({top:48})
   }
 }

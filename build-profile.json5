@@ -1,6 +1,20 @@
 {
   "app": {
-    "signingConfigs": [],
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.cer",
+          "storePassword": "0000001A2476A31D5401D74D5E3B5A7D81934A545A0870D247A39408F5414895D32324CF6E3A6981EEC3",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001AA9A838A0C5291778E5724AFFB9CD677ADD4F4F1AFDA45AB47B388E04C668CDD139022B387227",
+          "profile": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.p12"
+        }
+      }
+    ],
     "compileSdkVersion": 9,
     "compatibleSdkVersion": 9,
     "products": [
