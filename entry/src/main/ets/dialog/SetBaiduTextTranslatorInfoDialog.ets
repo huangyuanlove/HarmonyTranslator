@@ -1,0 +1,64 @@
+
+
+import router from '@ohos.router';
+import promptAction from '@ohos.promptAction';
+import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
+@CustomDialog
+export default struct SetBaiduTextTranslatorInfoDialog {
+  controller: CustomDialogController;
+  @State appid: string = ''
+  @State secret: string = ''
+
+
+  build() {
+    Column() {
+
+      Row() {
+        Text('如何申请：百度翻译-')
+        Image($r('app.media.tip')).width(20).height(20)
+      }.justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center).onClick(() => {
+        router.pushUrl({
+          url: 'pages/ApplyTranslateKey',
+          params: { 'url': 'https://fanyi-api.baidu.com/doc/21' }
+        })
+      })
+
+
+      TextInput({ placeholder: '请输入申请的API Key' }).onChange((value) => {
+        this.appid = value.toString()
+      }).margin(10).padding(10).borderRadius(10)
+      TextInput({ placeholder: '请输入申请的Secret Key' })
+        .onChange((value) => {
+          this.secret = value.toString()
+        }).margin(10).padding(10).borderRadius(10)
+      Row() {
+        Text('取消')
+          .onClick(() => {
+            if (this.controller != undefined) {
+              this.controller.close()
+            }
+          })
+          .backgroundColor(Color.Gray)
+          .borderRadius(8)
+          .fontColor(Color.White)
+          .padding({ top: 10, bottom: 10, left: 15, right: 15 })
+        Text('确认')
+          .onClick(() => {
+            let saveAppIDResult = AppStorage.Set(baidu_text_translation_api_key,this.appid)
+         let saveSecretResult =  AppStorage.Set(baidu_text_translation_secret,this.secret)
+            if(saveAppIDResult && saveSecretResult){
+              promptAction.showToast({message:"保存成功"})
+            }
+
+            if (this.controller != undefined) {
+              this.controller.close()
+            }
+          })
+          .backgroundColor(0X39d157)
+          .borderRadius(8)
+          .fontColor(Color.White)
+          .padding({ top: 10, bottom: 10, left: 15, right: 15 })
+      }.justifyContent(FlexAlign.SpaceAround).width('80%')
+    }.margin(15).borderRadius(10).backgroundColor(Color.White).padding(10)
+  }
+}

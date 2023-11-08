@@ -1,6 +1,7 @@
 import router from '@ohos.router'
 import promptAction from '@ohos.promptAction'
 import SelectTranslateApiDialog from '../dialog/SelectTranslateApiDialog'
+import SetBaiduTextTranslatorInfoDialog from '../dialog/SetBaiduTextTranslatorInfoDialog'
 
 @Entry
 @Component
@@ -8,6 +9,11 @@ struct SettingPage {
   selectTranslateApiDialogController: CustomDialogController = new CustomDialogController({
     builder: SelectTranslateApiDialog(),
     autoCancel: true,
+    customStyle: true
+  })
+  setBaiduTextTranslatorInfoDialogController: CustomDialogController = new CustomDialogController({
+    builder: SetBaiduTextTranslatorInfoDialog(),
+    autoCancel: false,
     customStyle: true
   })
 
@@ -47,7 +53,7 @@ struct SettingPage {
       .margin({ top: 15 })
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
-
+        this.setBaiduTextTranslatorInfoDialogController.open()
       }
       )
 

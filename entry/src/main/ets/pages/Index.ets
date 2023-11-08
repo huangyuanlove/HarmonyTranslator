@@ -28,11 +28,12 @@ PersistentStorage.PersistProp('translate_api', TranslationAPI.BAIDU_GENERAL)
 @Component
 struct Index {
   @State translation: TranslationResult = null;
-  @State inputContent: string = '';
+  @State inputContent: string = ''; 
   @State baidu_access_token: string = '';
   @StorageLink('translate_api') translationApiType: TranslationAPI = TranslationAPI.BAIDU_GENERAL
   @StorageLink('translate_from_name') translateFrom: TranslateLanguage = new TranslateLanguage('中文', 'zh')
-  @StorageLink('translate_to_name') translateTo: TranslateLanguage = new TranslateLanguage('英文', 'en')
+  @StorageLink('translate_to_name')
+  translateTo: TranslateLanguage = new TranslateLanguage('英文', 'en')
   @StorageLink('baidu_machine_translation_general_api_key') baidu_api_key: string = ''
   @StorageLink('baidu_machine_translation_general_secret_key') baidu_secret_key: string = ''
   @StorageLink('translate_type') translate_type: string = 'immediately'
@@ -96,18 +97,18 @@ struct Index {
     customStyle: true
   })
 
-  startTranslate(){
-    if (this.inputContent && this.inputContent.length > 0) {
-      this.translation.query = this.inputContent
-      this.translation.from = this.translateFrom.name
-      this.translation.to = this.translateTo.name
-
-      this.startTranslateByBaiduMachineGeneral()
-    }
-
-
-
-  }
+  // startTranslate(){
+  //   if (this.inputContent && this.inputContent.length > 0) {
+  //     this.translation.query = this.inputContent
+  //     this.translation.from = this.translateFrom.name
+  //     this.translation.to = this.translateTo.name
+  //
+  //     this.startTranslateByBaiduMachineGeneral()
+  //   }
+  //
+  //
+  //
+  // }
 
   startTranslateByBaiduMachineGeneral() {
       BaiduHttpUtil.translateByMachineGeneral(this.translateFrom.code, this.translateTo.code, this.inputContent, this.baidu_access_token, (data: TranslationGroup) => {
@@ -115,7 +116,7 @@ struct Index {
       });
   }
   startTranslateByBaiduGeneralApi(){
-
+    BaiduHttpUtil.translateByTextGeneral(this.inputContent)
   }
   startTranslateByYoudaoApi(){
 
@@ -144,14 +145,14 @@ struct Index {
               clearTimeout(this.queryTimer)
             }
             if (this.translate_type == 'immediately') {
-              this.queryTimer = setTimeout(this.startTranslate.bind(this), 500)
+              this.queryTimer = setTimeout(this.startTranslateByBaiduGeneralApi.bind(this), 500)
             } else {
               console.error('需要点击发送按钮才会进行翻译')
             }
           })
           .enterKeyType(EnterKeyType.Done)
           .onSubmit(() => {
-            this.startTranslate();
+            this.startTranslateByBaiduGeneralApi();
           })
 
         Image($r('app.media.setting')).width(24).height(24).margin(15).onClick(()=>{

@@ -1,7 +1,62 @@
 import http from '@ohos.net.http';
 import { TranslationGroup } from '../model/TranslateResult';
+import CryptoJS from '@ohos/crypto-js'
 import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback } from './CommonCallback';
+import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
+import promptAction from '@ohos.promptAction';
 export class BaiduHttpUtil {
+
+  static translateByTextGeneral(query:string){
+    var api_key :string =  AppStorage.Get(baidu_text_translation_api_key)
+    var secret :string =AppStorage.Get(baidu_text_translation_secret)
+    if(api_key || secret){
+      promptAction.showToast({message:"请先设置百度通用文本翻译appid 和 secret"})
+      return ;
+    }
+
+    var salt = new Date().getTime()
+    var raw = `${api_key}${query}${salt}${secret}`
+    console.error(`通用文本翻譯 raw ${raw}`)
+    var md5Result  = CryptoJS.MD5("")
+    console.error(`通用文本翻譯 md5 ${md5Result}`)
+
+    var url :string = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
+    let httpRequest = http.createHttp()
+    httpRequest.request(url,
+      {
+        method:http.RequestMethod.POST,
+        header:{
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        },
+        extraData:{
+          'q':query,
+          'from':'zh',
+          'to':'en',
+          'appid':api_key,
+          'salt':salt,
+          'sign':md5Result
+        },
+        expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
+        usingCache: false, // 可选，默认为true
+        priority: 1, // 可选，默认为1
+        connectTimeout: 60000, // 可选，默认为60000ms
+        readTimeout: 60000, // 可选，默认为60000ms
+        usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
+      },(error,data)=>{
+        if(error){
+          console.error('百度通用文本翻译出错')
+          console.error(JSON.stringify(error))
+        }else{
+          console.error('百度通用文本翻译完成')
+          console.error(JSON.stringify(data))
+        }
+      }
+    )
+
+  }
+
+
   static getAccessToken(apiKey: string, secretKey: String, callback: OnGetAccessTokenCallback) {
     var url: string = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`
     let httpRequest = http.createHttp();
