@@ -9,7 +9,7 @@ export class BaiduHttpUtil {
   static translateByTextGeneral(query:string){
     var api_key :string =  AppStorage.Get(baidu_text_translation_api_key)
     var secret :string =AppStorage.Get(baidu_text_translation_secret)
-    if(api_key || secret){
+    if(!api_key || !secret){
       promptAction.showToast({message:"请先设置百度通用文本翻译appid 和 secret"})
       return ;
     }
@@ -17,22 +17,22 @@ export class BaiduHttpUtil {
     var salt = new Date().getTime()
     var raw = `${api_key}${query}${salt}${secret}`
     console.error(`通用文本翻譯 raw ${raw}`)
-    var md5Result  = CryptoJS.MD5("")
+    var md5Result  = CryptoJS.MD5(raw)
     console.error(`通用文本翻譯 md5 ${md5Result}`)
 
-    var url :string = 'https://fanyi-api.baidu.com/api/trans/vip/translate'
+    var url :string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${query}&from=en&to=zh&appid=${api_key}&salt=${salt}&sign=${md5Result}`
     let httpRequest = http.createHttp()
     httpRequest.request(url,
       {
-        method:http.RequestMethod.POST,
+        method:http.RequestMethod.GET,
         header:{
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
         extraData:{
           'q':query,
-          'from':'zh',
-          'to':'en',
+          'from':'en',
+          'to':'zh',
           'appid':api_key,
           'salt':salt,
           'sign':md5Result

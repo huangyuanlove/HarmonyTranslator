@@ -3,6 +3,7 @@
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
+import App from '@system.app';
 @CustomDialog
 export default struct SetBaiduTextTranslatorInfoDialog {
   controller: CustomDialogController;
@@ -44,15 +45,18 @@ export default struct SetBaiduTextTranslatorInfoDialog {
           .padding({ top: 10, bottom: 10, left: 15, right: 15 })
         Text('确认')
           .onClick(() => {
-            let saveAppIDResult = AppStorage.Set(baidu_text_translation_api_key,this.appid)
-         let saveSecretResult =  AppStorage.Set(baidu_text_translation_secret,this.secret)
-            if(saveAppIDResult && saveSecretResult){
-              promptAction.showToast({message:"保存成功"})
-            }
+            PersistentStorage.PersistProp<string> (baidu_text_translation_api_key,this.appid)
+
+            PersistentStorage.PersistProp<string>(baidu_text_translation_secret,this.secret)
+
 
             if (this.controller != undefined) {
               this.controller.close()
             }
+            console.error("AppStorage appid "+AppStorage.Get<string>(baidu_text_translation_api_key))
+            console.error("AppStorage secret "+AppStorage.Get<string>(baidu_text_translation_secret))
+
+
           })
           .backgroundColor(0X39d157)
           .borderRadius(8)
