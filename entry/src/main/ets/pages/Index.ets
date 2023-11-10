@@ -1,26 +1,17 @@
 import prompt from '@ohos.promptAction';
 
+import { TranslationResult, TranslateLanguage } from '../model/TranslateResult'
 
-import { TranslationResult, TranslateLanguage, TranslationGroup } from '../model/TranslateResult'
-import {
-  baidu_machine_translation_general_api_key,
-  baidu_machine_translation_general_secret_key
-} from '../model/Config'
 import { TranslationAPI } from '../model/TranslationAPI'
 
 import { MainPageTopSwiper } from '../view/MainPageTopSwiper';
 import { BaiduHttpUtil } from '../util/BaiduHttpUtils';
 import { TranslationResultView } from '../view/TranslationResultView';
 import SelectLanguageDialog from '../dialog/SelectLanguageDialog';
-import SetApiInfoDialog from '../dialog/SetApiInfoDialog';
-import SetUserPreferDialog from '../dialog/SetUserPreferDialog';
 import router from '@ohos.router';
 //只能在UI页面使用，否则无法持久化数据
 PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
 PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
-PersistentStorage.PersistProp('baidu_machine_translation_general_api_key', baidu_machine_translation_general_api_key)
-PersistentStorage.PersistProp('baidu_machine_translation_general_secret_key', baidu_machine_translation_general_secret_key)
-PersistentStorage.PersistProp('translate_type', 'immediately')
 PersistentStorage.PersistProp('translate_api', TranslationAPI.BAIDU_GENERAL)
 
 
@@ -28,46 +19,29 @@ PersistentStorage.PersistProp('translate_api', TranslationAPI.BAIDU_GENERAL)
 @Component
 struct Index {
   @State translation: TranslationResult = null;
-  @State inputContent: string = ''; 
+  @State inputContent: string = '';
   @State baidu_access_token: string = '';
   @StorageLink('translate_api') translationApiType: TranslationAPI = TranslationAPI.BAIDU_GENERAL
   @StorageLink('translate_from_name') translateFrom: TranslateLanguage = new TranslateLanguage('中文', 'zh')
-  @StorageLink('translate_to_name')
-  translateTo: TranslateLanguage = new TranslateLanguage('英文', 'en')
-  @StorageLink('baidu_machine_translation_general_api_key') baidu_api_key: string = ''
-  @StorageLink('baidu_machine_translation_general_secret_key') baidu_secret_key: string = ''
-  @StorageLink('translate_type') translate_type: string = 'immediately'
+  @StorageLink('translate_to_name') translateTo: TranslateLanguage = new TranslateLanguage('英文', 'en')
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
   private queryTimer: number = 0;
 
+  @State translationResultStr :string = "";
+
   aboutToAppear() {
     this.translation = new TranslationResult()
-
-    console.error("----------------->" + this.baidu_api_key +"-----" + this.baidu_secret_key)
-    BaiduHttpUtil.getAccessToken(this.baidu_api_key, this.baidu_secret_key, (error, data) => {
-      if (error) {
-        console.error("获取 token 失败-->" + JSON.stringify(error))
-        prompt.showToast({ message: error.toString() })
-      } else {
-        console.error("获取 token 成功-->")
-        this.baidu_access_token = data.access_token
-      }
-    })
-
 
   }
 
   aboutToDisappear() {
     delete this.selectLanguageDialogController, // 删除dialogController
     this.selectLanguageDialogController = undefined // 将dialogController置空
-    delete this.setAppInfoDialogController, // 删除dialogController
-    this.setAppInfoDialogController = undefined // 将dialogController置空
-    delete this.setUserPreferDialogController, // 删除dialogController
-    this.setUserPreferDialogController = undefined // 将dialogController置空
+
   }
 
-  onAccept(selectLanguage: TranslateLanguage) {
+  onSelectLanguage(selectLanguage: TranslateLanguage) {
     console.error('this is ?' + this)
     if (this.changeFromLanguageType) {
       this.translateFrom = selectLanguage
@@ -83,45 +57,18 @@ struct Index {
 
   selectLanguageDialogController: CustomDialogController = new CustomDialogController({
     builder: SelectLanguageDialog({
-      confirm: this.onAccept.bind(this),
+      confirm: this.onSelectLanguage.bind(this),
     }),
     autoCancel: true,
   })
-  setAppInfoDialogController: CustomDialogController = new CustomDialogController({
-    builder: SetApiInfoDialog(),
-    customStyle: true
 
-  })
-  setUserPreferDialogController: CustomDialogController = new CustomDialogController({
-    builder: SetUserPreferDialog(),
-    customStyle: true
-  })
 
-  // startTranslate(){
-  //   if (this.inputContent && this.inputContent.length > 0) {
-  //     this.translation.query = this.inputContent
-  //     this.translation.from = this.translateFrom.name
-  //     this.translation.to = this.translateTo.name
-  //
-  //     this.startTranslateByBaiduMachineGeneral()
-  //   }
-  //
-  //
-  //
-  // }
+  startTranslateByBaiduGeneralApi() {
+    BaiduHttpUtil.translateByTextGeneral(this.inputContent,(result)=>{
 
-  startTranslateByBaiduMachineGeneral() {
-      BaiduHttpUtil.translateByMachineGeneral(this.translateFrom.code, this.translateTo.code, this.inputContent, this.baidu_access_token, (data: TranslationGroup) => {
-        this.translation.translations.push(data)
-      });
+      this.translationResultStr = result;
+    })
   }
-  startTranslateByBaiduGeneralApi(){
-    BaiduHttpUtil.translateByTextGeneral(this.inputContent)
-  }
-  startTranslateByYoudaoApi(){
-
-  }
-
 
 
   build() {
@@ -135,7 +82,7 @@ struct Index {
           .padding(10)
           .backgroundColor(0xE5E5E5)
           .borderRadius(10)
-          .fontColor(Color.White)
+          .fontColor(Color.Black)
           .onChange((value) => {
 
 
@@ -144,19 +91,17 @@ struct Index {
             if (this.queryTimer != 0) {
               clearTimeout(this.queryTimer)
             }
-            if (this.translate_type == 'immediately') {
-              this.queryTimer = setTimeout(this.startTranslateByBaiduGeneralApi.bind(this), 500)
-            } else {
-              console.error('需要点击发送按钮才会进行翻译')
-            }
+
+            this.queryTimer = setTimeout(this.startTranslateByBaiduGeneralApi.bind(this), 500)
+
           })
           .enterKeyType(EnterKeyType.Done)
           .onSubmit(() => {
             this.startTranslateByBaiduGeneralApi();
           })
 
-        Image($r('app.media.setting')).width(24).height(24).margin(15).onClick(()=>{
-          router.pushUrl({url:'pages/SettingsPage'})
+        Image($r('app.media.setting')).width(24).height(24).margin(15).onClick(() => {
+          router.pushUrl({ url: 'pages/SettingsPage' })
         })
       }
 
@@ -182,11 +127,15 @@ struct Index {
             }).textAlign(TextAlign.Center)
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
       }.width('100%')
+      if(this.translationResultStr.length > 0){
+        Text(this.translationResultStr).layoutWeight(1)
+      }else{
+        TranslationResultView().layoutWeight(1)
+      }
 
-      TranslationResultView().layoutWeight(1)
       MainPageTopSwiper()
 
     }
-    .width('100%').padding({top:48})
+    .width('100%').padding({ top: 48 })
   }
 }

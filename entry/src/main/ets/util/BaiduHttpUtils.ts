@@ -1,12 +1,12 @@
 import http from '@ohos.net.http';
 import { TranslationGroup } from '../model/TranslateResult';
 import CryptoJS from '@ohos/crypto-js'
-import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback } from './CommonCallback';
+import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback,OnTranslationCallBackTmp } from './CommonCallback';
 import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
 import promptAction from '@ohos.promptAction';
 export class BaiduHttpUtil {
 
-  static translateByTextGeneral(query:string){
+  static translateByTextGeneral(query:string,callBack:OnTranslationCallBackTmp){
     var api_key :string =  AppStorage.Get(baidu_text_translation_api_key)
     var secret :string =AppStorage.Get(baidu_text_translation_secret)
     if(!api_key || !secret){
@@ -20,7 +20,8 @@ export class BaiduHttpUtil {
     var md5Result  = CryptoJS.MD5(raw)
     console.error(`通用文本翻譯 md5 ${md5Result}`)
 
-    var url :string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${query}&from=en&to=zh&appid=${api_key}&salt=${salt}&sign=${md5Result}`
+    var url :string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURI(query)}&from=en&to=zh&appid=${api_key}&salt=${salt}&sign=${md5Result}`
+
     let httpRequest = http.createHttp()
     httpRequest.request(url,
       {
@@ -29,14 +30,7 @@ export class BaiduHttpUtil {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
-        extraData:{
-          'q':query,
-          'from':'en',
-          'to':'zh',
-          'appid':api_key,
-          'salt':salt,
-          'sign':md5Result
-        },
+
         expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
         usingCache: false, // 可选，默认为true
         priority: 1, // 可选，默认为1
@@ -47,9 +41,12 @@ export class BaiduHttpUtil {
         if(error){
           console.error('百度通用文本翻译出错')
           console.error(JSON.stringify(error))
+          callBack(JSON.stringify(error))
         }else{
           console.error('百度通用文本翻译完成')
           console.error(JSON.stringify(data))
+          // callBack(unescape(data.result.toString()))
+          callBack(data.result.toString())
         }
       }
     )
