@@ -6,12 +6,21 @@ import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../m
 import promptAction from '@ohos.promptAction';
 export class BaiduHttpUtil {
 
+  /**
+   * {"responseCode":200,"cookies":".baidu.com\tTRUE\t/\tFALSE\t1731230596\tBAIDUID\t2C29A634B051655D4A752434BC587136:FG=1","header":{"content-length":"54","content-type":"application/json","date":"Sat, 11 Nov 2023 09:23:17 GMT","p3p":"CP=\" OTI DSP COR IVA OUR IND COM \"","server":"Apache","set-cookie":"BAIDUID=2C29A634B051655D4A752434BC587136:FG=1; expires=Sun, 10-Nov-24 09:23:17 GMT; max-age=31536000; path=/; domain=.baidu.com; version=1","tracecode":"13970427782338333450111117"},"result":"{\"error_code\":\"52003\",\"error_msg\":\"UNAUTHORIZED USER\"}","resultType":0}
+   * @param query
+   * @param callBack
+   */
   static translateByTextGeneral(query:string,callBack:OnTranslationCallBackTmp){
+
     var api_key :string =  AppStorage.Get(baidu_text_translation_api_key)
     var secret :string =AppStorage.Get(baidu_text_translation_secret)
     if(!api_key || !secret){
       promptAction.showToast({message:"请先设置百度通用文本翻译appid 和 secret"})
-      return ;
+      return
+    }
+    if(!query || query.length == 0){
+      return
     }
 
     var salt = new Date().getTime()
@@ -45,7 +54,6 @@ export class BaiduHttpUtil {
         }else{
           console.error('百度通用文本翻译完成')
           console.error(JSON.stringify(data))
-          // callBack(unescape(data.result.toString()))
           callBack(data.result.toString())
         }
       }

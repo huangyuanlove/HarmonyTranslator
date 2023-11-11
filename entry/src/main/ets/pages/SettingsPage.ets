@@ -3,6 +3,9 @@ import promptAction from '@ohos.promptAction'
 import SelectTranslateApiDialog from '../dialog/SelectTranslateApiDialog'
 import SetBaiduTextTranslatorInfoDialog from '../dialog/SetBaiduTextTranslatorInfoDialog'
 
+
+PersistentStorage.PersistProp('test_PersistentStorage', "init");
+
 @Entry
 @Component
 struct SettingPage {
@@ -16,6 +19,18 @@ struct SettingPage {
     autoCancel: false,
     customStyle: true
   })
+
+  @StorageLink('test_PersistentStorage') test_PersistentStorage:string = 'default value'
+
+
+  aboutToAppear(){
+    console.error("huangyuan,aboutToAppear test_PersistentStorage 的值" + this.test_PersistentStorage)
+  }
+  aboutToDisappear(){
+    let tmp = AppStorage.Get<string>('test_PersistentStorage')
+    console.error('huangyuan,aboutToDisappear test_PersistentStorage 的值' + tmp)
+  }
+
 
   build() {
     Column() {
@@ -70,6 +85,7 @@ struct SettingPage {
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
         promptAction.showToast({ message: "开发中~~" })
+        this.test_PersistentStorage = '`````百度机器翻译：文本翻译-通用版````'
 
       })
 

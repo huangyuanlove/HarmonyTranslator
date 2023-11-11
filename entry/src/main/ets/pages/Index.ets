@@ -66,7 +66,7 @@ struct Index {
   startTranslateByBaiduGeneralApi() {
     BaiduHttpUtil.translateByTextGeneral(this.inputContent,(result)=>{
 
-      this.translationResultStr = result;
+      this.translationResultStr = JSON.parse(result)['trans_result'][0]['dst'];
     })
   }
 

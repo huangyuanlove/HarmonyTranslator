@@ -1,5 +1,7 @@
 
+PersistentStorage.PersistProp<string> (baidu_text_translation_api_key,'')
 
+PersistentStorage.PersistProp<string>(baidu_text_translation_secret,'')
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
@@ -9,6 +11,11 @@ export default struct SetBaiduTextTranslatorInfoDialog {
   controller: CustomDialogController;
   @State appid: string = ''
   @State secret: string = ''
+
+  @StorageLink(baidu_text_translation_api_key)  apiKey :string ='';
+  @StorageLink(baidu_text_translation_secret) appSecret:string =''
+
+
 
 
   build() {
@@ -45,10 +52,9 @@ export default struct SetBaiduTextTranslatorInfoDialog {
           .padding({ top: 10, bottom: 10, left: 15, right: 15 })
         Text('确认')
           .onClick(() => {
-            PersistentStorage.PersistProp<string> (baidu_text_translation_api_key,this.appid)
 
-            PersistentStorage.PersistProp<string>(baidu_text_translation_secret,this.secret)
-
+            this.apiKey = this.appid
+            this.appSecret = this.secret
 
             if (this.controller != undefined) {
               this.controller.close()
