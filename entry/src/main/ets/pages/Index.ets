@@ -33,6 +33,14 @@ struct Index {
   aboutToAppear() {
     this.translation = new TranslationResult()
 
+    let test_PersistentStorage:string = AppStorage.Get<string>('test_PersistentStorage')
+    console.error("test_PersistentStorage index aboutToAppear--> " + test_PersistentStorage)
+
+  }
+
+  onPageShow(){
+    let test_PersistentStorage:string = AppStorage.Get<string>('test_PersistentStorage')
+    console.error("test_PersistentStorage index onPageShow --> " + test_PersistentStorage)
   }
 
   aboutToDisappear() {

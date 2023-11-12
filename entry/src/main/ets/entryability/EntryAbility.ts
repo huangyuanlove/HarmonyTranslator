@@ -6,7 +6,7 @@ import window from '@ohos.window';
 export default class EntryAbility extends UIAbility {
   onCreate(want, launchParam) {
     hilog.info(0x0000, 'testTag', '%{public}s', 'Ability onCreate');
-
+    PersistentStorage.PersistProp('test_PersistentStorage', 'default value EntryAbility onCreate')
   }
 
   onDestroy() {
@@ -24,6 +24,7 @@ export default class EntryAbility extends UIAbility {
       }
       hilog.info(0x0000, 'testTag', 'Succeeded in loading the content. Data: %{public}s', JSON.stringify(data) ?? '');
     });
+
   }
 
   onWindowStageDestroy() {
