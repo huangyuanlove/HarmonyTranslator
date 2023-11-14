@@ -6,9 +6,11 @@
 
 #### 翻译api 
 
-[x] 百度翻译开放平台：https://fanyi-api.baidu.com/
-[] 百度机器翻译
-[] 有道翻译
+[ x ] [百度翻译开放平台](https://fanyi-api.baidu.com/)
+
+[ ] 百度机器翻译
+
+[ ] 有道翻译
 
 #### 状态管理
 
@@ -27,4 +29,4 @@
 
 #### 使用的开源项目
 
-*  (crypto-js) [ https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js] 该库在2.0.3版本将最小api版本为10，个人认为现在的这个时间段，将api最低版本从9提升到10应该更新一个大版本号，应用中锁定了版本为**2.0.1**
+*  [crypto-js](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js) 该库在2.0.3版本将最小api版本为10，个人认为现在的这个时间段，将api最低版本从9提升到10应该更新一个大版本号，应用中锁定了版本为**2.0.1**
