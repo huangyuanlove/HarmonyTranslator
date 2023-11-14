@@ -1,15 +1,14 @@
 ## 随译
 基于鸿蒙3.1/4.0，使用Stage 模型和 ArkUI 开发
-由于身边没有对应的设备，只在远程模拟器和远程真机上验证
+由于身边没有对应的设备，只在MetaPadPro 2019 鸿蒙4.0.0上验证
 
 ### 技术说明
 
 #### 翻译api 
-当前使用的是百度 AI 开放平台--> 机器翻译--> 文本翻译-通用版
-产品文档在这里：[百度翻译通用版] (https://ai.baidu.com/ai-doc/MT/4kqryjku9) 链接是 https://ai.baidu.com/ai-doc/MT/4kqryjku9
 
-
-后续会提供 翻译开放平台 api 和有道智云的 api 支持
+[x] 百度翻译开放平台：https://fanyi-api.baidu.com/
+[] 百度机器翻译
+[] 有道翻译
 
 #### 状态管理
 
@@ -25,3 +24,7 @@
 或者在github 或者 gitee 上都能找到联系方式
 
 图标来源于 https://www.iconfont.cn/
+
+#### 使用的开源项目
+
+*  (crypto-js) [ https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js] 该库在2.0.3版本将最小api版本为10，个人认为现在的这个时间段，将api最低版本从9提升到10应该更新一个大版本号，应用中锁定了版本为**2.0.1**
