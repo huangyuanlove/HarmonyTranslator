@@ -8,7 +8,5 @@
   "description": "Please describe the basic information.",
   "main": "",
   "version": "1.0.0",
-  "dependencies": {
-    "@ohos/crypto-js": "^2.0.1"
-  }
+  "dependencies": {}
 }

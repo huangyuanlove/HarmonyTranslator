@@ -9,7 +9,12 @@ import { BaiduHttpUtil } from '../util/BaiduHttpUtils';
 import { TranslationResultView } from '../view/TranslationResultView';
 import SelectLanguageDialog from '../dialog/SelectLanguageDialog';
 import router from '@ohos.router';
+import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
 //只能在UI页面使用，否则无法持久化数据
+//用到的属性必须要要先初始化，否则不会被加载到AppStorage中
+PersistentStorage.PersistProp<string> (baidu_text_translation_api_key,'')
+PersistentStorage.PersistProp<string>(baidu_text_translation_secret,'')
+
 PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
 PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
 PersistentStorage.PersistProp('translate_api', TranslationAPI.BAIDU_GENERAL)
@@ -31,6 +36,8 @@ struct Index {
   @State translationResultStr :string = "";
 
   aboutToAppear() {
+
+
     this.translation = new TranslationResult()
 
     let test_PersistentStorage:string = AppStorage.Get<string>('test_PersistentStorage')

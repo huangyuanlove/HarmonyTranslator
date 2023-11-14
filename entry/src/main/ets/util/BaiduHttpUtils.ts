@@ -1,6 +1,6 @@
 import http from '@ohos.net.http';
 import { TranslationGroup } from '../model/TranslateResult';
-import CryptoJS from '@ohos/crypto-js'
+import {CryptoJS} from '@ohos/crypto-js'
 import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback,OnTranslationCallBackTmp } from './CommonCallback';
 import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
 import promptAction from '@ohos.promptAction';

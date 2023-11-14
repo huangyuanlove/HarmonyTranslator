@@ -1,7 +1,5 @@
 
-PersistentStorage.PersistProp<string> (baidu_text_translation_api_key,'')
 
-PersistentStorage.PersistProp<string>(baidu_text_translation_secret,'')
 import router from '@ohos.router';
 import promptAction from '@ohos.promptAction';
 import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'

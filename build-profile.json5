@@ -6,9 +6,9 @@
         "type": "HarmonyOS",
         "material": {
           "certpath": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.cer",
-          "storePassword": "0000001B9313DAE439CE9F704C866277A154FEBA369FBBC15A713B3F3D4E505A57429DB6F56FBD898BB5AA",
+          "storePassword": "0000001BB596B643BABDB2BCA81F31E8471E0515E2F663C297FDF06B24E99463ACAA888CAA404755108D24",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001B1D83746CC07B4AD5538F649F7186679946B1C30EB92F931DABAD13A17018DAC54071F9A2FFA5A8",
+          "keyPassword": "0000001BB567FE7DAF9914EB9A3D455C773A25D71809C00B953233B69D4D62A0AF3E629829396788748A2D",
           "profile": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.p12"
