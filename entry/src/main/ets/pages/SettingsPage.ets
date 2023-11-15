@@ -58,7 +58,9 @@ struct SettingPage {
 
       Row() {
         Text("百度通用文本翻译").textAlign(TextAlign.Center).fontColor(Color.Black)
-        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 })
+        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(()=>{
+          router.pushUrl({url:'pages/ApplyTranslateKey',params:{url:'https://fanyi-api.baidu.com/product/11'}})
+        })
         Blank()
         Image($r('app.media.right_arrow')).width(20).height(20)
 
@@ -74,7 +76,9 @@ struct SettingPage {
 
       Row() {
         Text("百度机器翻译：文本翻译-通用版").textAlign(TextAlign.Center).fontColor(Color.Black)
-        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 })
+        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(()=>{
+          router.pushUrl({url:'pages/ApplyTranslateKey',params:{url:'https://ai.baidu.com/ai-doc/MT/4kqryjku9'}})
+        })
         Blank()
         Image($r('app.media.right_arrow')).width(20).height(20)
 
@@ -86,6 +90,24 @@ struct SettingPage {
       .onClick(() => {
         promptAction.showToast({ message: "开发中~~" })
         this.test_PersistentStorage = '`````百度机器翻译：文本翻译-通用版````'
+
+      })
+      Row() {
+        Text("百度机器翻译：文本翻译-词典版").textAlign(TextAlign.Center).fontColor(Color.Black)
+        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(()=>{
+          router.pushUrl({url:'pages/ApplyTranslateKey',params:{url:'https://ai.baidu.com/ai-doc/MT/nkqrzmbpc'}})
+        })
+        Blank()
+        Image($r('app.media.right_arrow')).width(20).height(20)
+
+      }
+      .width('100%')
+      .padding(15)
+      .margin({ top: 15 })
+      .backgroundColor(0xE5E5E5)
+      .onClick(() => {
+        promptAction.showToast({ message: "开发中~~" })
+        this.test_PersistentStorage = '`````百度机器翻译：文本翻译-词典版````'
 
       })
 
