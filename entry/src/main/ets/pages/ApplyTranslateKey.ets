@@ -23,7 +23,9 @@ struct ApplyTranslateKey{
         }).margin(15)
         Text(this.title).textAlign(TextAlign.Center).fontSize(24).layoutWeight(1)
       }.alignItems(VerticalAlign.Center)
-      Progress({ value: this.loadProgress, total: 100, type: ProgressType.Linear }).width('100%')
+      if(this.loadProgress < 100){
+        Progress({ value: this.loadProgress, total: 100, type: ProgressType.Linear }).width('100%')
+      }
       Web({ src: this.url, controller: this.webviewController}).domStorageAccess(true).mixedMode(MixedMode.All).onTitleReceive((event)=>{
         this.title = event.title
       }).onProgressChange((event)=>{
