@@ -10,6 +10,7 @@ import { TranslationResultView } from '../view/TranslationResultView';
 import SelectLanguageDialog from '../dialog/SelectLanguageDialog';
 import router from '@ohos.router';
 import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
+import common from '@ohos.app.ability.common';
 //只能在UI页面使用，否则无法持久化数据
 //用到的属性必须要要先初始化，否则不会被加载到AppStorage中
 PersistentStorage.PersistProp<string> (baidu_text_translation_api_key,'')
@@ -34,7 +35,7 @@ struct Index {
   private queryTimer: number = 0;
 
   @State translationResultStr :string = "";
-
+  private context = getContext(this) as common.UIAbilityContext;
   aboutToAppear() {
 
 
@@ -42,6 +43,21 @@ struct Index {
 
     let test_PersistentStorage:string = AppStorage.Get<string>('test_PersistentStorage')
     console.error("test_PersistentStorage index aboutToAppear--> " + test_PersistentStorage)
+
+    let rawFileId = $rawfile('baidu_genera_lang.json').id
+    this.context.resourceManager.getStringValue(rawFileId,(error,value)=>{
+    if(error){
+      prompt.showToast({message:"读取出错"+JSON.stringify(error)})
+      this.inputContent = JSON.stringify(error);
+      console.error("读取出错"+JSON.stringify(error))
+    }else{
+      prompt.showToast({message:"读取成功"+JSON.stringify(value)})
+      this.inputContent = JSON.stringify(value);
+      console.error("读取成功"+JSON.stringify(value))
+    }
+    })
+
+
 
   }
 
