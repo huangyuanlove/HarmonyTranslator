@@ -1,71 +1,70 @@
 import prompt from '@ohos.promptAction';
-
 import { TranslationResult, TranslateLanguage } from '../model/TranslateResult'
-
 import { TranslationAPI } from '../model/TranslationAPI'
-
 import { MainPageTopSwiper } from '../view/MainPageTopSwiper';
 import { BaiduHttpUtil } from '../util/BaiduHttpUtils';
 import { TranslationResultView } from '../view/TranslationResultView';
 import SelectLanguageDialog from '../dialog/SelectLanguageDialog';
 import router from '@ohos.router';
-import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
+import {
+  translation_api,
+  baidu_text_translation_api_key,
+  baidu_text_translation_secret,
+  translation_from,
+  translation_to
+} from '../model/GeneralConfig'
 import common from '@ohos.app.ability.common';
 import buffer from '@ohos.buffer';
 //只能在UI页面使用，否则无法持久化数据
 //用到的属性必须要要先初始化，否则不会被加载到AppStorage中
-PersistentStorage.PersistProp<string> (baidu_text_translation_api_key,'')
-PersistentStorage.PersistProp<string>(baidu_text_translation_secret,'')
+PersistentStorage.PersistProp<string>(baidu_text_translation_api_key, '')
+PersistentStorage.PersistProp<string>(baidu_text_translation_secret, '')
+PersistentStorage.PersistProp<TranslationAPI>(translation_api, TranslationAPI.BAIDU_GENERAL)
 
-PersistentStorage.PersistProp('translate_from', new TranslateLanguage('中文', 'zh'))
-PersistentStorage.PersistProp('translate_to', new TranslateLanguage('英文', 'en'))
-PersistentStorage.PersistProp('translate_api', TranslationAPI.BAIDU_GENERAL)
+PersistentStorage.PersistProp<string>(translation_from, JSON.stringify( new TranslateLanguage('中文', 'zh')))
+PersistentStorage.PersistProp<string>(translation_to, JSON.stringify(new TranslateLanguage('英文', 'en')))
 
 
 @Entry
 @Component
 struct Index {
+  @StorageLink(translation_api) translationApiType: TranslationAPI = TranslationAPI.BAIDU_GENERAL
+  @StorageLink(translation_from) translateFrom: string = JSON.stringify(new TranslateLanguage('中文', 'zh'))
+  @StorageLink(translation_to) translateTo: string = JSON.stringify(new TranslateLanguage('英文', 'en'))
   @State translation: TranslationResult = null;
   @State inputContent: string = '';
-  @State baidu_access_token: string = '';
-  @StorageLink('translate_api') translationApiType: TranslationAPI = TranslationAPI.BAIDU_GENERAL
-  @StorageLink('translate_from_name') translateFrom: TranslateLanguage = new TranslateLanguage('中文', 'zh')
-  @StorageLink('translate_to_name') translateTo: TranslateLanguage = new TranslateLanguage('英文', 'en')
   @State changeFromLanguageType: boolean = false;
   @State changeToLanguageType: boolean = false;
+  @State translationResultStr: string = "";
+  //选择语言弹窗中的列表，需要根据选择的翻译api从rawFile中读取
+  @State translationLanguageMap: Object = new Object();
+
+  //计时器实现停止输入立即翻译
   private queryTimer: number = 0;
-
-  @State translationResultStr :string = "";
+  selectLanguageDialogController: CustomDialogController;
   private context = getContext(this) as common.UIAbilityContext;
+
   aboutToAppear() {
-
-
     this.translation = new TranslationResult()
+    //初始化翻译语种
+    let rawFileName = 'baidu_genera_lang.json'
+    if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
 
-    let test_PersistentStorage:string = AppStorage.Get<string>('test_PersistentStorage')
-    console.error("test_PersistentStorage index aboutToAppear--> " + test_PersistentStorage)
+    } else if (this.translationApiType == TranslationAPI.BAIDU_MACHINE_GENERAL) {
 
-
-    this.context.resourceManager.getRawFileContent('baidu_genera_lang.json',(error,value)=>{
-    if(error){
-      prompt.showToast({message:"读取出错"+JSON.stringify(error)})
-      this.inputContent = JSON.stringify(error);
-      console.error("读取出错"+JSON.stringify(error))
-    }else{
-
-      prompt.showToast({message:"读取成功"+JSON.stringify(value)})
-      this.inputContent = buffer.from(value).toString('utf-8')
-      console.error("读取成功"+this.inputContent)
     }
+    this.context.resourceManager.getRawFileContent(rawFileName, (error, value) => {
+      if (error) {
+        prompt.showToast({ message: "读取出错" + JSON.stringify(error) })
+        console.error("读取出错" + JSON.stringify(error))
+      } else {
+        const rawString: string = buffer.from(value).toString('utf-8')
+        console.error("读取成功" + rawString)
+        this.translationLanguageMap = JSON.parse(rawString)
+
+      }
     })
 
-
-
-  }
-
-  onPageShow(){
-    let test_PersistentStorage:string = AppStorage.Get<string>('test_PersistentStorage')
-    console.error("test_PersistentStorage index onPageShow --> " + test_PersistentStorage)
   }
 
   aboutToDisappear() {
@@ -77,10 +76,10 @@ struct Index {
   onSelectLanguage(selectLanguage: TranslateLanguage) {
     console.error('this is ?' + this)
     if (this.changeFromLanguageType) {
-      this.translateFrom = selectLanguage
+      this.translateFrom = JSON.stringify(selectLanguage)
 
     } else if (this.changeToLanguageType) {
-      this.translateTo = selectLanguage
+      this.translateTo = JSON.stringify(selectLanguage)
     }
 
     console.error('Callback when the second button is clicked')
@@ -88,21 +87,12 @@ struct Index {
 
   }
 
-  selectLanguageDialogController: CustomDialogController = new CustomDialogController({
-    builder: SelectLanguageDialog({
-      confirm: this.onSelectLanguage.bind(this),
-    }),
-    autoCancel: true,
-  })
-
-
   startTranslateByBaiduGeneralApi() {
-    BaiduHttpUtil.translateByTextGeneral(this.inputContent,(result)=>{
+    BaiduHttpUtil.translateByTextGeneral(this.inputContent, (result) => {
 
       this.translationResultStr = JSON.parse(result)['trans_result'][0]['dst'];
     })
   }
-
 
   build() {
     Column() {
@@ -141,28 +131,54 @@ struct Index {
 
       Stack({ alignContent: Alignment.End }) {
         Row() {
-          Text(this.translateFrom.name).margin(10).width('40%')
+          Text(this.translateFrom).margin(10).width('40%')
             .onClick(() => {
-              if (this.selectLanguageDialogController != undefined) {
-                this.changeFromLanguageType = true;
-                this.changeToLanguageType = false;
-                this.selectLanguageDialogController.open()
+              this.changeFromLanguageType = true;
+              this.changeToLanguageType = false;
+              if (this.selectLanguageDialogController == undefined) {
+                this.selectLanguageDialogController = new CustomDialogController({
+                  builder: SelectLanguageDialog({
+                    confirm: this.onSelectLanguage.bind(this),
+                    languageMap: this.translationLanguageMap,
+                    selectFromLang: this.changeFromLanguageType
+
+                  }),
+                  autoCancel: true,
+                  customStyle: true
+                })
               }
+              this.selectLanguageDialogController.open()
             }).textAlign(TextAlign.Center)
           Image($r("app.media.switch_language_positions")).width(23).height(20).onClick(() => {
             [this.translateTo, this.translateFrom] = [this.translateFrom, this.translateTo];
           })
-          Text(this.translateTo.name).margin(10).width('40%')
+          Text(this.translateTo).margin(10).width('40%')
             .onClick(() => {
               this.changeFromLanguageType = false;
               this.changeToLanguageType = true;
+
+              if (this.selectLanguageDialogController == undefined) {
+                this.selectLanguageDialogController = new CustomDialogController({
+                  builder: SelectLanguageDialog({
+                    confirm: this.onSelectLanguage.bind(this),
+                    languageMap: this.translationLanguageMap,
+                    selectFromLang: this.changeFromLanguageType
+
+                  }),
+                  autoCancel: true,
+                  customStyle: true
+                })
+              }
+
+
               this.selectLanguageDialogController.open()
             }).textAlign(TextAlign.Center)
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
       }.width('100%')
-      if(this.translationResultStr.length > 0){
+
+      if (this.translationResultStr.length > 0) {
         Text(this.translationResultStr).layoutWeight(1)
-      }else{
+      } else {
         TranslationResultView().layoutWeight(1)
       }
 

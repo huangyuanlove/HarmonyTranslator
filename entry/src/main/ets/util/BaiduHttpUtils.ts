@@ -1,9 +1,10 @@
 import http from '@ohos.net.http';
-import { TranslationGroup } from '../model/TranslateResult';
+import { TranslateLanguage, TranslationGroup } from '../model/TranslateResult';
 import {CryptoJS} from '@ohos/crypto-js'
 import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback,OnTranslationCallBackTmp } from './CommonCallback';
-import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
+import {baidu_text_translation_api_key,baidu_text_translation_secret,translation_from,translation_to} from '../model/GeneralConfig'
 import promptAction from '@ohos.promptAction';
+
 export class BaiduHttpUtil {
 
   /**
@@ -15,10 +16,22 @@ export class BaiduHttpUtil {
 
     var api_key :string =  AppStorage.Get(baidu_text_translation_api_key)
     var secret :string =AppStorage.Get(baidu_text_translation_secret)
+
+    var from:string = AppStorage.Get<TranslateLanguage>(translation_from).code
+    var to:string = AppStorage.Get<TranslateLanguage>(translation_to).code
+
     if(!api_key || !secret){
+      console.error("请先设置百度通用文本翻译appid 和 secret")
       promptAction.showToast({message:"请先设置百度通用文本翻译appid 和 secret"})
       return
     }
+    if(from == to){
+      console.error("源语言和目标语言相同")
+      promptAction.showToast({message:"源语言和目标语言相同"})
+      return ;
+    }
+
+
     if(!query || query.length == 0){
       return
     }
@@ -29,8 +42,8 @@ export class BaiduHttpUtil {
     var md5Result  = CryptoJS.MD5(raw)
     console.error(`通用文本翻譯 md5 ${md5Result}`)
 
-    var url :string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURI(query)}&from=en&to=zh&appid=${api_key}&salt=${salt}&sign=${md5Result}`
-
+    var url :string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURI(query)}&from=${from}&to=${to}&appid=${api_key}&salt=${salt}&sign=${md5Result}`
+    console.error("请求地址-->" + url)
     let httpRequest = http.createHttp()
     httpRequest.request(url,
       {
