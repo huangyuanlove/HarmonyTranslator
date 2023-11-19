@@ -2,9 +2,9 @@
 基于鸿蒙3.1/4.0，使用Stage 模型和 ArkUI 开发
 由于身边没有对应的设备，只在MetaPadPro 2019 鸿蒙4.0.0上验证
 
-### 技术说明
 
-#### 翻译api 
+
+## 翻译api 
 
 [ x ] [百度翻译开放平台](https://fanyi-api.baidu.com/)
 
@@ -12,14 +12,8 @@
 
 [ ] 有道翻译
 
-#### 状态管理
 
-使用了鸿蒙 ArkUI 自身的状态管理方案
-
-* PersistentStorage 存储用户偏好设置，比如翻译时机，api 所需要的 key 等
-
-
-#### 版权声明
+## 版权声明
 
 虽然极大概率不会有啥培训机构看上这个仓库，但还是先声明一下 ：**禁止商用**，想要商用请联系作者本人取得授权；**禁止商用**，想要商用请联系作者本人取得授权；**禁止商用**，想要商用请联系作者本人取得授权
 邮箱：huangyuan@huangyuanlove.com
@@ -27,6 +21,55 @@
 
 图标来源于 https://www.iconfont.cn/
 
-#### 使用的开源项目
+## 使用的开源项目
 
-*  [crypto-js](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js) 该库在2.0.3版本将最小api版本为10，个人认为现在的这个时间段，将api最低版本从9提升到10应该更新一个大版本号，应用中锁定了版本为**2.0.1**
+*  [crypto-js](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js) 
+
+## 踩坑
+
+### 三方库
+#### crypto-js
+* [crypto-js](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js) 该库在2.0.3版本将最小api版本为10，个人认为现在的这个时间段(2023年11月18日，harmonyos next 还只对企业合作伙伴开放，部分手机还在使用HarmonyOS4测试版)，将api最低版本从9提升到10应该更新一个大版本号，不应该只更新小版本号。应用中锁定了版本为**2.0.1**
+
+
+### 系统api
+
+#### PersistentStorage和@StorageLink
+* 项目中有些用户偏好设置需要持久化存储，于是选择了PersistentStorage和@StorageLink方式进行存储，大致如下
+``` TypeScript
+export class User {
+  constructor(name: string, age: number) {
+    this.name = name
+    this.age = age
+  }
+  name: string
+  age: number
+}
+
+PersistentStorage.PersistProp<User>('user', new User('xuan',18))
+@Entry
+@Component
+struct Tmp {
+  @StorageLink('user') user: User = new User('xuan', 18)
+  build() {
+    Text(`${this.user.name} : ${this.user.age}`)
+  }
+}
+
+```
+当我第一运行的时候，页面显示正常，Text显示的内容是`xuan : 18`<br/>
+但是当我重新打开应用(不是重新编译，就是简单的在设备上关掉应用然后点击桌面图标打开应用)的时候，Text显示内容是 `undefined : undefined`<br/>
+打上断点发现重新打开应用的时候 `user` 是一个字符串类型，值为 {'name':'xuan','age':18}，但字符串对象没有name和age属性，所以显示了 undefined.<br/>
+看到文档中有写 https://developer.harmonyos.com/cn/docs/documentation/doc-references-V3/arkts-state-management-0000001504151156-V3#ZH-CN_TOPIC_0000001523808562__persistprop
+> AppStorage的属性向PersistentStorage中持久化的允许的类型是：<br/>
+> number，string，boolean，enum基础类型。<br/>
+> Object中可序列化的属性。<br/>
+> 不允许undefined和null。
+
+但同样的，在指南中同样有描述 https://developer.harmonyos.com/cn/docs/documentation/doc-guides-V3/arkts-persiststorage-0000001474017166-V3#section610120319595
+
+> PersistentStorage允许的类型和值有：<br/>
+> number, string, boolean, enum 等简单类型。<br/>
+> 可以被JSON.stringify()和JSON.parse()重构的对象。例如Date, Map, Set等内置类型则不支持，以及对象的属性方法不支持持久化。<br/>
+
+看到论坛有同样的求助，有开发者回复说他是将对象转成字符串保存的，使用的时候再parse一下。

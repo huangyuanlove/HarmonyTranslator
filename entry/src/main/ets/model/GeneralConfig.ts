@@ -7,5 +7,5 @@ export const baidu_text_translation_secret:string = "baidu_text_translation_secr
 
 export const translation_api:string = "translation_api"
 
-export const translation_from :string = "translate_from"
-export const translation_to :string = "translate_to"
+export const source_language :string = "source_language"
+export const target_language :string = "target_language"

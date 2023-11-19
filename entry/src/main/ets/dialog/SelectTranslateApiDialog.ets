@@ -1,19 +1,40 @@
+import { translation_api } from '../model/GeneralConfig';
+import { TranslationAPI } from '../model/TranslationAPI';
 @CustomDialog
 export default struct SelectTranslateApiDialog {
   controller: CustomDialogController;
+  confirm:(api :TranslationAPI)=>void
+
+  @StorageLink(translation_api) translationApiType: string = TranslationAPI.BAIDU_GENERAL
+  @State selectedApi:string = ''
+
+aboutToAppear(){
+  this.selectedApi = this.translationApiType
+}
+
 
   build() {
     Column() {
       Row() {
-        Radio({ value: 'Radio1', group: 'radioGroup' })
-          .checked(true)
+        Radio({ value: TranslationAPI.BAIDU_GENERAL, group: 'radioGroup' })
+          .checked( this.selectedApi === TranslationAPI.BAIDU_GENERAL ).enabled(true)
+          .onChange((isChecked:boolean)=>{
+            if(isChecked){
+              this.selectedApi = TranslationAPI.BAIDU_GENERAL
+            }
+          })
         Text("百度通用文本翻译")
 
       }.width('100%')
 
       Row() {
-        Radio({ value: 'Radio2', group: 'radioGroup' })
-          .checked(false).enabled(false)
+        Radio({ value: TranslationAPI.BAIDU_MACHINE_GENERAL, group: 'radioGroup' })
+          .checked(this.selectedApi === TranslationAPI.BAIDU_MACHINE_GENERAL).enabled(true)
+        .onChange((isChecked:boolean)=>{
+          if(isChecked){
+            this.selectedApi = TranslationAPI.BAIDU_MACHINE_GENERAL
+          }
+        })
 
         Text(){
           Span("百度机器翻译：文本翻译-通用版 ")
@@ -43,6 +64,9 @@ export default struct SelectTranslateApiDialog {
           .padding({ top: 10, bottom: 10, left: 15, right: 15 })
         Text('确认')
           .onClick(() => {
+
+           this.translationApiType = this.selectedApi
+
             if (this.controller != undefined) {
               this.controller.close()
             }

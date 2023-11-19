@@ -19,9 +19,20 @@ export class TranslateLanguage {
     this.name = name
     this.code = code
   }
-
   name: string
   code: string
+
+  toJSON(): object {
+    return {
+      name: this.name,
+      code: this.code,
+    };
+  }
+
+  static fromJSON(json: object): TranslateLanguage {
+    return new TranslateLanguage(json['name'],json['code']);
+  }
+
 }
 
 

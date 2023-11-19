@@ -10,8 +10,8 @@ import {
   translation_api,
   baidu_text_translation_api_key,
   baidu_text_translation_secret,
-  translation_from,
-  translation_to
+  source_language,
+  target_language
 } from '../model/GeneralConfig'
 import common from '@ohos.app.ability.common';
 import buffer from '@ohos.buffer';
@@ -19,18 +19,19 @@ import buffer from '@ohos.buffer';
 //用到的属性必须要要先初始化，否则不会被加载到AppStorage中
 PersistentStorage.PersistProp<string>(baidu_text_translation_api_key, '')
 PersistentStorage.PersistProp<string>(baidu_text_translation_secret, '')
-PersistentStorage.PersistProp<TranslationAPI>(translation_api, TranslationAPI.BAIDU_GENERAL)
+PersistentStorage.PersistProp<string>(translation_api, TranslationAPI.BAIDU_GENERAL)
 
-PersistentStorage.PersistProp<string>(translation_from, JSON.stringify( new TranslateLanguage('中文', 'zh')))
-PersistentStorage.PersistProp<string>(translation_to, JSON.stringify(new TranslateLanguage('英文', 'en')))
+PersistentStorage.PersistProp<string>(source_language, JSON.stringify( new TranslateLanguage('中文', 'zh')))
+PersistentStorage.PersistProp<string>(target_language, JSON.stringify(new TranslateLanguage('英文', 'en')))
 
-
+PersistentStorage.PersistProp<TranslateLanguage>(source_language, new TranslateLanguage('中文', 'zh'))
+PersistentStorage.PersistProp<TranslateLanguage>(target_language, new TranslateLanguage('英文', 'en'))
 @Entry
 @Component
 struct Index {
-  @StorageLink(translation_api) translationApiType: TranslationAPI = TranslationAPI.BAIDU_GENERAL
-  @StorageLink(translation_from) translateFrom: string = JSON.stringify(new TranslateLanguage('中文', 'zh'))
-  @StorageLink(translation_to) translateTo: string = JSON.stringify(new TranslateLanguage('英文', 'en'))
+  @StorageLink(translation_api) @Watch('onApiChange') translationApiType: string = TranslationAPI.BAIDU_GENERAL
+  @StorageLink(source_language) sourceLanguage: TranslateLanguage = new TranslateLanguage('中文', 'zh')
+  @StorageLink(target_language) targetLanguage: TranslateLanguage = new TranslateLanguage('英文', 'en')
   @State translation: TranslationResult = null;
   @State inputContent: string = '';
   @State changeFromLanguageType: boolean = false;
@@ -44,14 +45,18 @@ struct Index {
   selectLanguageDialogController: CustomDialogController;
   private context = getContext(this) as common.UIAbilityContext;
 
-  aboutToAppear() {
-    this.translation = new TranslationResult()
-    //初始化翻译语种
+  onApiChange(propName: string): void {
+   console.error("translationApiType change-->" + propName)
+    this.init()
+  }
+
+
+  private  init(){
     let rawFileName = 'baidu_genera_lang.json'
     if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
-
+      console.error("应该从 百度通用翻译语种文件中读取")
     } else if (this.translationApiType == TranslationAPI.BAIDU_MACHINE_GENERAL) {
-
+      console.error("应该从 百度机器翻译语种文件中读取")
     }
     this.context.resourceManager.getRawFileContent(rawFileName, (error, value) => {
       if (error) {
@@ -61,9 +66,30 @@ struct Index {
         const rawString: string = buffer.from(value).toString('utf-8')
         console.error("读取成功" + rawString)
         this.translationLanguageMap = JSON.parse(rawString)
+        //因为StorageLink获取到的数据只能是string类型，这里转一下
+        if( typeof this.sourceLanguage === 'string'){
+          this.sourceLanguage = JSON.parse(this.sourceLanguage as string)
+        }
+        if(typeof this.targetLanguage ==='string'){
+          this.targetLanguage = JSON.parse(this.targetLanguage as string)
+        }
+        //如果切换了api，语言对应的code会变，这里处理一下
+        let sourceCodeFromMap = this.translationLanguageMap[this.sourceLanguage.name]
+        let targetCodeFromMap = this.translationLanguageMap[this.targetLanguage.name]
+        this.sourceLanguage.code = this.translationLanguageMap[this.sourceLanguage.name]
+        this.targetLanguage.code = this.translationLanguageMap[this.targetLanguage.name]
 
       }
     })
+}
+
+  aboutToAppear() {
+
+
+
+    this.translation = new TranslationResult()
+    //初始化翻译语种
+    this.init()
 
   }
 
@@ -76,10 +102,12 @@ struct Index {
   onSelectLanguage(selectLanguage: TranslateLanguage) {
     console.error('this is ?' + this)
     if (this.changeFromLanguageType) {
-      this.translateFrom = JSON.stringify(selectLanguage)
+      this.sourceLanguage.name = selectLanguage.name
+      this.sourceLanguage.code = selectLanguage.code
 
     } else if (this.changeToLanguageType) {
-      this.translateTo = JSON.stringify(selectLanguage)
+      this.targetLanguage.name = selectLanguage.name
+      this.targetLanguage.code = selectLanguage.code
     }
 
     console.error('Callback when the second button is clicked')
@@ -131,7 +159,7 @@ struct Index {
 
       Stack({ alignContent: Alignment.End }) {
         Row() {
-          Text(this.translateFrom).margin(10).width('40%')
+          Text(this.sourceLanguage.name).margin(10).width('40%')
             .onClick(() => {
               this.changeFromLanguageType = true;
               this.changeToLanguageType = false;
@@ -150,9 +178,9 @@ struct Index {
               this.selectLanguageDialogController.open()
             }).textAlign(TextAlign.Center)
           Image($r("app.media.switch_language_positions")).width(23).height(20).onClick(() => {
-            [this.translateTo, this.translateFrom] = [this.translateFrom, this.translateTo];
+            [this.targetLanguage, this.sourceLanguage] = [this.sourceLanguage, this.targetLanguage];
           })
-          Text(this.translateTo).margin(10).width('40%')
+          Text(this.targetLanguage.name).margin(10).width('40%')
             .onClick(() => {
               this.changeFromLanguageType = false;
               this.changeToLanguageType = true;

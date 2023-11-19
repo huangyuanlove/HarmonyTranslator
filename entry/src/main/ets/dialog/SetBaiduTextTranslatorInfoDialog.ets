@@ -1,9 +1,9 @@
 
 
 import router from '@ohos.router';
-import promptAction from '@ohos.promptAction';
+
 import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
-import App from '@system.app';
+
 @CustomDialog
 export default struct SetBaiduTextTranslatorInfoDialog {
   controller: CustomDialogController;

@@ -2,7 +2,7 @@ import http from '@ohos.net.http';
 import { TranslateLanguage, TranslationGroup } from '../model/TranslateResult';
 import {CryptoJS} from '@ohos/crypto-js'
 import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback,OnTranslationCallBackTmp } from './CommonCallback';
-import {baidu_text_translation_api_key,baidu_text_translation_secret,translation_from,translation_to} from '../model/GeneralConfig'
+import {baidu_text_translation_api_key,baidu_text_translation_secret,source_language,target_language} from '../model/GeneralConfig'
 import promptAction from '@ohos.promptAction';
 
 export class BaiduHttpUtil {
@@ -17,8 +17,8 @@ export class BaiduHttpUtil {
     var api_key :string =  AppStorage.Get(baidu_text_translation_api_key)
     var secret :string =AppStorage.Get(baidu_text_translation_secret)
 
-    var from:string = AppStorage.Get<TranslateLanguage>(translation_from).code
-    var to:string = AppStorage.Get<TranslateLanguage>(translation_to).code
+    var from:string = AppStorage.Get<TranslateLanguage>(source_language).code
+    var to:string = AppStorage.Get<TranslateLanguage>(target_language).code
 
     if(!api_key || !secret){
       console.error("请先设置百度通用文本翻译appid 和 secret")

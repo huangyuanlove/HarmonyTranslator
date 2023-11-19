@@ -3,9 +3,6 @@ import promptAction from '@ohos.promptAction'
 import SelectTranslateApiDialog from '../dialog/SelectTranslateApiDialog'
 import SetBaiduTextTranslatorInfoDialog from '../dialog/SetBaiduTextTranslatorInfoDialog'
 
-
-PersistentStorage.PersistProp('test_PersistentStorage', "init");
-
 @Entry
 @Component
 struct SettingPage {
@@ -24,11 +21,11 @@ struct SettingPage {
 
 
   aboutToAppear(){
-    console.error("huangyuan,aboutToAppear test_PersistentStorage 的值" + this.test_PersistentStorage)
+
   }
   aboutToDisappear(){
-    let tmp = AppStorage.Get<string>('test_PersistentStorage')
-    console.error('huangyuan,aboutToDisappear test_PersistentStorage 的值' + tmp)
+
+
   }
 
 
