@@ -1,37 +1,72 @@
-
-
 import router from '@ohos.router';
 
-import {baidu_text_translation_api_key,baidu_text_translation_secret} from '../model/GeneralConfig'
+import {
+  baidu_text_translation_api_key,
+  baidu_text_translation_secret,
+  baidu_ai_translation_general_key,
+  baidu_ai_translation_general_secret,
+  translation_api
+} from '../model/GeneralConfig'
+import { TranslationAPI } from '../model/TranslationAPI';
 
 @CustomDialog
 export default struct SetBaiduTextTranslatorInfoDialog {
   controller: CustomDialogController;
-  @State appid: string = ''
+  @State appID: string = ''
   @State secret: string = ''
 
-  @StorageLink(baidu_text_translation_api_key)  apiKey :string ='';
-  @StorageLink(baidu_text_translation_secret) appSecret:string =''
+  @StorageLink(translation_api) translationApiType: string = TranslationAPI.BAIDU_GENERAL
+
+  private getRegisterUrl(): string {
+    if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
+      return 'https://fanyi-api.baidu.com/doc/21'
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
+      return 'https://ai.baidu.com/ai-doc/MT/4kqryjku9'
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
+      return 'https://ai.baidu.com/ai-doc/MT/nkqrzmbpc'
+    }
+    return ''
+  }
+
+  private getRegisterText():string{
+    if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
+      return '如何申请：百度通用文本翻译API'
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
+      return '如何申请：百度机器翻译-文本翻译-通用版'
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
+      return '如何申请：百度机器翻译-文本翻译-词典版'
+    }else if(this.translationApiType == TranslationAPI.YOUDAO_GENERAL){
+      return '如何申请：有道智云翻译'
+    }
+  }
 
 
+  private updateApiKeyAndSecret(): void {
+    if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
+      AppStorage.SetOrCreate<string>(baidu_text_translation_api_key, this.appID)
+      AppStorage.SetOrCreate<string>(baidu_text_translation_secret, this.secret)
 
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL || this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
+      AppStorage.SetOrCreate<string>(baidu_ai_translation_general_key, this.appID)
+      AppStorage.SetOrCreate<string>(baidu_ai_translation_general_secret, this.secret)
+    }
+  }
 
   build() {
     Column() {
-
       Row() {
-        Text('如何申请：百度翻译-')
+        Text(this.getRegisterText())
         Image($r('app.media.tip')).width(20).height(20)
       }.justifyContent(FlexAlign.Start).alignItems(VerticalAlign.Center).onClick(() => {
         router.pushUrl({
           url: 'pages/ApplyTranslateKey',
-          params: { 'url': 'https://fanyi-api.baidu.com/doc/21' }
+          params: { 'url': this.getRegisterUrl() }
         })
       })
 
 
       TextInput({ placeholder: '请输入申请的API Key' }).onChange((value) => {
-        this.appid = value.toString()
+        this.appID = value.toString()
       }).margin(10).padding(10).borderRadius(10)
       TextInput({ placeholder: '请输入申请的Secret Key' })
         .onChange((value) => {
@@ -51,15 +86,11 @@ export default struct SetBaiduTextTranslatorInfoDialog {
         Text('确认')
           .onClick(() => {
 
-            this.apiKey = this.appid
-            this.appSecret = this.secret
+            this.updateApiKeyAndSecret()
 
             if (this.controller != undefined) {
               this.controller.close()
             }
-            console.error("AppStorage appid "+AppStorage.Get<string>(baidu_text_translation_api_key))
-            console.error("AppStorage secret "+AppStorage.Get<string>(baidu_text_translation_secret))
-
 
           })
           .backgroundColor(0X39d157)

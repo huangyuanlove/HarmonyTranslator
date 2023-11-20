@@ -17,9 +17,6 @@ struct SettingPage {
     customStyle: true
   })
 
-  @StorageLink('test_PersistentStorage') test_PersistentStorage:string = 'default value'
-
-
   aboutToAppear(){
 
   }
@@ -85,9 +82,7 @@ struct SettingPage {
       .margin({ top: 15 })
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
-        promptAction.showToast({ message: "开发中~~" })
-        this.test_PersistentStorage = '`````百度机器翻译：文本翻译-通用版````'
-
+        this.setBaiduTextTranslatorInfoDialogController.open()
       })
       Row() {
         Text("百度机器翻译：文本翻译-词典版").textAlign(TextAlign.Center).fontColor(Color.Black)
@@ -104,7 +99,7 @@ struct SettingPage {
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
         promptAction.showToast({ message: "开发中~~" })
-        this.test_PersistentStorage = '`````百度机器翻译：文本翻译-词典版````'
+
 
       })
 

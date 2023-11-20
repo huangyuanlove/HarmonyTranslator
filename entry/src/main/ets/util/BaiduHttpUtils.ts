@@ -137,6 +137,8 @@ export class BaiduHttpUtil {
   static translateByAIGeneral(query:string,token:string,callback: OnBaiduAIGeneralTranslationCallback){
     var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
     var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
+
+
     console.error(`from=${from}  to=${to}  q=${query}  token=${token}`)
     let httpRequest = http.createHttp();
     httpRequest.request('https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_token=' + token, {
@@ -202,10 +204,11 @@ export class BaiduHttpUtil {
         if (err) {
           tmp.error = JSON.stringify(err).toString();
           callback(tmp)
+          console.error("机器通用文本翻译结果--> " + tmp.error)
         } else {
 
           var rootJson = JSON.parse(data.result.toString());
-
+          console.error("机器通用文本翻译结果--> " + data.result.toString())
           var errorCode = rootJson['error_code']
           var errorMsg = rootJson['error_msg']
           if (errorCode != undefined) {

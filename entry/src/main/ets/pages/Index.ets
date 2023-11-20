@@ -11,6 +11,8 @@ import {
   baidu_ai_translation_token,
   baidu_text_translation_api_key,
   baidu_text_translation_secret,
+  baidu_ai_translation_general_key,
+  baidu_ai_translation_general_secret,
   source_language,
   target_language,
   BaiduToken,
@@ -22,6 +24,8 @@ import { BaiduAIGeneralTranslationResultView } from '../view/BaiduAIGeneralTrans
 //用到的属性必须要要先初始化，否则不会被加载到AppStorage中
 PersistentStorage.PersistProp<string>(baidu_text_translation_api_key, '')
 PersistentStorage.PersistProp<string>(baidu_text_translation_secret, '')
+PersistentStorage.PersistProp<string>(baidu_ai_translation_general_key, '')
+PersistentStorage.PersistProp<string>(baidu_ai_translation_general_secret, '')
 PersistentStorage.PersistProp<string>(translation_api, TranslationAPI.BAIDU_GENERAL)
 
 
@@ -58,11 +62,11 @@ struct Index {
   }
 
   private init(): void {
-    let rawFileName = 'baidu_genera_lang.json'
+    let rawFileName = 'baidu_general_lang.json'
     if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
       console.error("应该从 百度通用翻译语种文件中读取")
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
-      rawFileName = 'baidu_ai_genera_lang.json'
+      rawFileName = 'baidu_ai_general_lang.json'
       console.error("应该从 百度机器翻译语种文件中读取")
     }
     this.context.resourceManager.getRawFileContent(rawFileName, (error, value) => {
@@ -80,7 +84,8 @@ struct Index {
         if (typeof this.targetLanguage === 'string') {
           this.targetLanguage = JSON.parse(this.targetLanguage as string)
         }
-        //如果切换了api，语言对应的code会变，这里处理一下
+        //如果切换了api，语言对应的code会变，这里处理一下;但每个语言的中文名字不尽相同
+
 
         this.sourceLanguage.code = this.translationLanguageMap[this.sourceLanguage.name]
         this.targetLanguage.code = this.translationLanguageMap[this.targetLanguage.name]
@@ -111,15 +116,25 @@ struct Index {
     if (needReacquire) {
       BaiduHttpUtil.getAccessToken((error, data) => {
         if (error) {
-          this.baiduToken = new BaiduToken()
+          console.error("获取百度token出错-->" +JSON.stringify(error) )
+          let tmp:BaiduToken = new BaiduToken()
+          tmp.error ='获取百度token出错'
+          tmp.error_description =JSON.stringify(error)
+          this.baiduToken = tmp
         } else {
-          this.baiduToken.access_token = data.access_token
-          this.baiduToken.expires_in = data.expires_in
-          this.baiduToken.expires_date = Date.now() + (data.expires_in * 1000)
-          this.baiduToken.error = null
-          this.baiduToken.error_description = null
+          let tmp:BaiduToken = new BaiduToken()
+
+
+          tmp.access_token = data.access_token
+          tmp.expires_in = data.expires_in
+          tmp.expires_date = Date.now() + (data.expires_in * 1000)
+          tmp.error = null
+          tmp.error_description = null
+          this.baiduToken = tmp
         }
       })
+    }else{
+      console.error("baidu token 正常")
     }
   }
 
@@ -139,25 +154,24 @@ struct Index {
   }
 
   onSelectLanguage(selectLanguage: TranslateLanguage) {
-    console.error('this is ?' + this)
-    if (this.changeFromLanguageType) {
-      this.sourceLanguage.name = selectLanguage.name
-      this.sourceLanguage.code = selectLanguage.code
 
+    if (this.changeFromLanguageType) {
+      this.sourceLanguage = selectLanguage
     } else if (this.changeToLanguageType) {
-      this.targetLanguage.name = selectLanguage.name
-      this.targetLanguage.code = selectLanguage.code
+      this.targetLanguage = selectLanguage
     }
 
-    console.error('Callback when the second button is clicked')
+
     prompt.showToast({ message: "选择的语言--> " + selectLanguage.name + ",code-->" + selectLanguage.code })
 
   }
 
   private startTranslation() {
     if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
+      this.baiduAiGeneralTranslationResult = undefined
       this.startTranslateByBaiduGeneralApi()
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
+      this.translationResultStr = ''
       this.startTranslationByBaiduAIGeneral()
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
       this.startTranslationByBaiduAIDict()

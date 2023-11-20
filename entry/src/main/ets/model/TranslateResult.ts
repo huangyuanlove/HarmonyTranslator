@@ -60,13 +60,16 @@ export class BaiduAIGeneralTranslationResult{
     tmp.errorMessage = json['error_msg']
     tmp.logId = json['log_id']
     var resultJSON = json['result']
-    var trans_result_arr: JSON [] = resultJSON['trans_result']
-    if (trans_result_arr && trans_result_arr.length > 0) {
-      tmp.result = []
-      trans_result_arr.forEach(trans_result => {
-        tmp.result.push(trans_result['dst'],trans_result['src']);
-      })
+    if(resultJSON){
+      var trans_result_arr: JSON [] = resultJSON['trans_result']
+      if (trans_result_arr && trans_result_arr.length > 0) {
+        tmp.result = []
+        trans_result_arr.forEach(trans_result => {
+          tmp.result.push(trans_result['dst'],trans_result['src']);
+        })
+      }
     }
+
     return tmp
   }
 

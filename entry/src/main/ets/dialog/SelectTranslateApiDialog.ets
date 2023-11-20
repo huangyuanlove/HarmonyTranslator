@@ -38,7 +38,6 @@ aboutToAppear(){
 
         Text(){
           Span("百度机器翻译：文本翻译-通用版 ")
-          Span("开发中~~").fontColor(Color.Red)
         }
       }.justifyContent(FlexAlign.Start).width('100%')
 
