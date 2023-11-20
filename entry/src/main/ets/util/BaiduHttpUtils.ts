@@ -1,8 +1,23 @@
 import http from '@ohos.net.http';
-import { TranslateLanguage, TranslationGroup } from '../model/TranslateResult';
-import {CryptoJS} from '@ohos/crypto-js'
-import { AccessTokenResult, OnGetAccessTokenCallback, OnTranslationCallback,OnTranslationCallBackTmp } from './CommonCallback';
-import {baidu_text_translation_api_key,baidu_text_translation_secret,source_language,target_language} from '../model/GeneralConfig'
+import { BaiduAIGeneralTranslationResult, TranslateLanguage, TranslationGroup } from '../model/TranslateResult';
+import { CryptoJS } from '@ohos/crypto-js'
+import {
+  AccessTokenResult,
+OnBaiduAIGeneralTranslationCallback,
+OnBaiduGeneralTranslationCallback,
+OnGetAccessTokenCallback,
+  OnTranslationCallback,
+
+
+} from './CommonCallback';
+import {
+  baidu_text_translation_api_key,
+  baidu_text_translation_secret,
+  source_language,
+  target_language,
+  baidu_ai_translation_general_key,
+  baidu_ai_translation_general_secret,
+} from '../model/GeneralConfig'
 import promptAction from '@ohos.promptAction';
 
 export class BaiduHttpUtil {
@@ -12,43 +27,43 @@ export class BaiduHttpUtil {
    * @param query
    * @param callBack
    */
-  static translateByTextGeneral(query:string,callBack:OnTranslationCallBackTmp){
+  static translateByTextGeneral(query: string, callBack: OnBaiduGeneralTranslationCallback) {
 
-    var api_key :string =  AppStorage.Get(baidu_text_translation_api_key)
-    var secret :string =AppStorage.Get(baidu_text_translation_secret)
+    var api_key: string = AppStorage.Get(baidu_text_translation_api_key)
+    var secret: string = AppStorage.Get(baidu_text_translation_secret)
 
-    var from:string = AppStorage.Get<TranslateLanguage>(source_language).code
-    var to:string = AppStorage.Get<TranslateLanguage>(target_language).code
+    var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
+    var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
 
-    if(!api_key || !secret){
+    if (!api_key || !secret) {
       console.error("请先设置百度通用文本翻译appid 和 secret")
-      promptAction.showToast({message:"请先设置百度通用文本翻译appid 和 secret"})
+      promptAction.showToast({ message: "请先设置百度通用文本翻译appid 和 secret" })
       return
     }
-    if(from == to){
+    if (from == to) {
       console.error("源语言和目标语言相同")
-      promptAction.showToast({message:"源语言和目标语言相同"})
-      return ;
+      promptAction.showToast({ message: "源语言和目标语言相同" })
+      return;
     }
 
 
-    if(!query || query.length == 0){
+    if (!query || query.length == 0) {
       return
     }
 
     var salt = new Date().getTime()
     var raw = `${api_key}${query}${salt}${secret}`
     console.error(`通用文本翻譯 raw ${raw}`)
-    var md5Result  = CryptoJS.MD5(raw)
+    var md5Result = CryptoJS.MD5(raw)
     console.error(`通用文本翻譯 md5 ${md5Result}`)
 
-    var url :string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURI(query)}&from=${from}&to=${to}&appid=${api_key}&salt=${salt}&sign=${md5Result}`
+    var url: string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURI(query)}&from=${from}&to=${to}&appid=${api_key}&salt=${salt}&sign=${md5Result}`
     console.error("请求地址-->" + url)
     let httpRequest = http.createHttp()
     httpRequest.request(url,
       {
-        method:http.RequestMethod.GET,
-        header:{
+        method: http.RequestMethod.GET,
+        header: {
           'Content-Type': 'application/x-www-form-urlencoded',
           'Accept': 'application/json'
         },
@@ -59,12 +74,12 @@ export class BaiduHttpUtil {
         connectTimeout: 60000, // 可选，默认为60000ms
         readTimeout: 60000, // 可选，默认为60000ms
         usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
-      },(error,data)=>{
-        if(error){
+      }, (error, data) => {
+        if (error) {
           console.error('百度通用文本翻译出错')
           console.error(JSON.stringify(error))
           callBack(JSON.stringify(error))
-        }else{
+        } else {
           console.error('百度通用文本翻译完成')
           console.error(JSON.stringify(data))
           callBack(data.result.toString())
@@ -75,7 +90,12 @@ export class BaiduHttpUtil {
   }
 
 
-  static getAccessToken(apiKey: string, secretKey: String, callback: OnGetAccessTokenCallback) {
+  static getAccessToken( callback: OnGetAccessTokenCallback) {
+
+    var apiKey: string = AppStorage.Get(baidu_ai_translation_general_key)
+    var secretKey: string = AppStorage.Get(baidu_ai_translation_general_secret)
+
+
     var url: string = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`
     let httpRequest = http.createHttp();
     httpRequest.request(url,
@@ -113,7 +133,46 @@ export class BaiduHttpUtil {
 
   }
 
-  static translateByMachineGeneral(from: string, to: string, query: string, token: string, callback: OnTranslationCallback) {
+
+  static translateByAIGeneral(query:string,token:string,callback: OnBaiduAIGeneralTranslationCallback){
+    var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
+    var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
+    console.error(`from=${from}  to=${to}  q=${query}  token=${token}`)
+    let httpRequest = http.createHttp();
+    httpRequest.request('https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_token=' + token, {
+      method: http.RequestMethod.POST,
+      header: { 'Content-Type': 'application/json;charset=utf-8' },
+      extraData: {
+        from: from,
+        to: to,
+        q: query
+      },
+      expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
+      usingCache: false, // 可选，默认为true
+      priority: 1, // 可选，默认为1
+      connectTimeout: 60000, // 可选，默认为60000ms
+      readTimeout: 60000, // 可选，默认为60000ms
+      usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
+    },(error,data)=>{
+
+
+      if(error){
+        let tmp:BaiduAIGeneralTranslationResult = new BaiduAIGeneralTranslationResult();
+        tmp.errorCode = "-1"
+        tmp.errorMessage = JSON.stringify(error)
+      }else{
+        let result :BaiduAIGeneralTranslationResult = BaiduAIGeneralTranslationResult.fromJSON(JSON.parse(data.result.toString()))
+        callback(result)
+      }
+    })
+  }
+
+
+  static translateByAIDict( query: string, token: string, callback: OnTranslationCallback) {
+
+    var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
+    var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
+
 
     console.error(`from=${from}  to=${to}  q=${query}  token=${token}`)
 

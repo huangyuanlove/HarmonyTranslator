@@ -46,3 +46,29 @@ export class LanguageGroup {
   languages: TranslateLanguage[]
 }
 
+
+export class BaiduAIGeneralTranslationResult{
+  errorCode:string
+  errorMessage:string
+  logId:string
+  result:{dst:string,src:string}[]
+
+
+  static fromJSON(json:object):BaiduAIGeneralTranslationResult{
+    let tmp = new BaiduAIGeneralTranslationResult()
+    tmp.errorCode = json['error_code']
+    tmp.errorMessage = json['error_msg']
+    tmp.logId = json['log_id']
+    var resultJSON = json['result']
+    var trans_result_arr: JSON [] = resultJSON['trans_result']
+    if (trans_result_arr && trans_result_arr.length > 0) {
+      tmp.result = []
+      trans_result_arr.forEach(trans_result => {
+        tmp.result.push(trans_result['dst'],trans_result['src']);
+      })
+    }
+    return tmp
+  }
+
+}
+

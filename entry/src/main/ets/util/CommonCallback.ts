@@ -1,4 +1,4 @@
-import { TranslationGroup } from '../model/TranslateResult'
+import { BaiduAIGeneralTranslationResult, TranslationGroup } from '../model/TranslateResult'
 
 export interface OnGetAccessTokenCallback {
 
@@ -6,12 +6,17 @@ export interface OnGetAccessTokenCallback {
 }
 
 export interface OnTranslationCallback {
-  ( data: TranslationGroup)
+  ( data: TranslationGroup):void
 }
 
-export interface OnTranslationCallBackTmp{
-  (data:string)
+export interface OnBaiduGeneralTranslationCallback{
+  (data:string):void
 }
+export interface OnBaiduAIGeneralTranslationCallback{
+  (data:BaiduAIGeneralTranslationResult):void
+}
+
+
 
 export class AccessTokenResult {
   access_token: string

@@ -5,13 +5,13 @@
         "name": "default",
         "type": "HarmonyOS",
         "material": {
-          "certpath": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.cer",
-          "storePassword": "0000001B9052A1D89FDC12E078922EE8C255517F68182278F000CD50168CF96067000059515833930B69D0",
+          "certpath": "/Users/huangyuan/.ohos/config/auto_debug_Translator_com.huangyuanlove.translator_260086000249248119.cer",
+          "storePassword": "0000001A3C284C39B89D957331F450E14E334FE52A4D4FB10962C1D36C5D0B85BC62375D388F098E1E90",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BDA61C634FF9B30A0A5441F7B3A07EA72866FB7A3717BBF8B2C4838D67384DE428058993BB3F47F",
-          "profile": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.p7b",
+          "keyPassword": "0000001A0EFE0F7F974D26B18766DFEB799E1B4541731212D79592F0E95552606B76F1A728F6C501EFB9",
+          "profile": "/Users/huangyuan/.ohos/config/auto_debug_Translator_com.huangyuanlove.translator_260086000249248119.p7b",
           "signAlg": "SHA256withECDSA",
-          "storeFile": "C:\\Users\\huangyuan\\.ohos\\config\\auto_debug_HarmonyTranslator_com.huangyuanlove.translator_260086000249248119.p12"
+          "storeFile": "/Users/huangyuan/.ohos/config/auto_debug_Translator_com.huangyuanlove.translator_260086000249248119.p12"
         }
       }
     ],

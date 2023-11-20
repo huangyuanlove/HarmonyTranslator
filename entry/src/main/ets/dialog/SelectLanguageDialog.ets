@@ -43,7 +43,7 @@ struct SelectLanguageDialog {
             oftenLang.push(element)
           }
         }else{
-          if(element.name != this.translateTo.name){
+          if(element.name != this.translateTo.name && !element.name.includes("自动") &&! !element.name.includes("检测")){
             oftenLang.push(element)
           }
         }

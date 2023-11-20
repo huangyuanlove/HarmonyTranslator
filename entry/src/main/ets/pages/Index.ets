@@ -1,5 +1,5 @@
 import prompt from '@ohos.promptAction';
-import { TranslationResult, TranslateLanguage } from '../model/TranslateResult'
+import { TranslationResult, TranslateLanguage, BaiduAIGeneralTranslationResult } from '../model/TranslateResult'
 import { TranslationAPI } from '../model/TranslationAPI'
 import { MainPageTopSwiper } from '../view/MainPageTopSwiper';
 import { BaiduHttpUtil } from '../util/BaiduHttpUtils';
@@ -8,30 +8,34 @@ import SelectLanguageDialog from '../dialog/SelectLanguageDialog';
 import router from '@ohos.router';
 import {
   translation_api,
+  baidu_ai_translation_token,
   baidu_text_translation_api_key,
   baidu_text_translation_secret,
   source_language,
-  target_language
+  target_language,
+  BaiduToken,
 } from '../model/GeneralConfig'
 import common from '@ohos.app.ability.common';
 import buffer from '@ohos.buffer';
+import { BaiduAIGeneralTranslationResultView } from '../view/BaiduAIGeneralTranslationResultView';
 //只能在UI页面使用，否则无法持久化数据
 //用到的属性必须要要先初始化，否则不会被加载到AppStorage中
 PersistentStorage.PersistProp<string>(baidu_text_translation_api_key, '')
 PersistentStorage.PersistProp<string>(baidu_text_translation_secret, '')
 PersistentStorage.PersistProp<string>(translation_api, TranslationAPI.BAIDU_GENERAL)
 
-PersistentStorage.PersistProp<string>(source_language, JSON.stringify( new TranslateLanguage('中文', 'zh')))
-PersistentStorage.PersistProp<string>(target_language, JSON.stringify(new TranslateLanguage('英文', 'en')))
 
 PersistentStorage.PersistProp<TranslateLanguage>(source_language, new TranslateLanguage('中文', 'zh'))
 PersistentStorage.PersistProp<TranslateLanguage>(target_language, new TranslateLanguage('英文', 'en'))
+PersistentStorage.PersistProp<BaiduToken>(baidu_ai_translation_token, new BaiduToken())
+
 @Entry
 @Component
 struct Index {
   @StorageLink(translation_api) @Watch('onApiChange') translationApiType: string = TranslationAPI.BAIDU_GENERAL
   @StorageLink(source_language) sourceLanguage: TranslateLanguage = new TranslateLanguage('中文', 'zh')
   @StorageLink(target_language) targetLanguage: TranslateLanguage = new TranslateLanguage('英文', 'en')
+  @StorageLink(baidu_ai_translation_token) baiduToken: BaiduToken = new BaiduToken()
   @State translation: TranslationResult = null;
   @State inputContent: string = '';
   @State changeFromLanguageType: boolean = false;
@@ -40,22 +44,25 @@ struct Index {
   //选择语言弹窗中的列表，需要根据选择的翻译api从rawFile中读取
   @State translationLanguageMap: Object = new Object();
 
+  //百度机器通用文本翻译
+  @State baiduAiGeneralTranslationResult: BaiduAIGeneralTranslationResult = undefined
+
   //计时器实现停止输入立即翻译
   private queryTimer: number = 0;
   selectLanguageDialogController: CustomDialogController;
   private context = getContext(this) as common.UIAbilityContext;
 
   onApiChange(propName: string): void {
-   console.error("translationApiType change-->" + propName)
+    console.error("translationApiType change-->" + propName)
     this.init()
   }
 
-
-  private  init(){
+  private init(): void {
     let rawFileName = 'baidu_genera_lang.json'
     if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
       console.error("应该从 百度通用翻译语种文件中读取")
-    } else if (this.translationApiType == TranslationAPI.BAIDU_MACHINE_GENERAL) {
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
+      rawFileName = 'baidu_ai_genera_lang.json'
       console.error("应该从 百度机器翻译语种文件中读取")
     }
     this.context.resourceManager.getRawFileContent(rawFileName, (error, value) => {
@@ -67,24 +74,56 @@ struct Index {
         console.error("读取成功" + rawString)
         this.translationLanguageMap = JSON.parse(rawString)
         //因为StorageLink获取到的数据只能是string类型，这里转一下
-        if( typeof this.sourceLanguage === 'string'){
+        if (typeof this.sourceLanguage === 'string') {
           this.sourceLanguage = JSON.parse(this.sourceLanguage as string)
         }
-        if(typeof this.targetLanguage ==='string'){
+        if (typeof this.targetLanguage === 'string') {
           this.targetLanguage = JSON.parse(this.targetLanguage as string)
         }
         //如果切换了api，语言对应的code会变，这里处理一下
-        let sourceCodeFromMap = this.translationLanguageMap[this.sourceLanguage.name]
-        let targetCodeFromMap = this.translationLanguageMap[this.targetLanguage.name]
+
         this.sourceLanguage.code = this.translationLanguageMap[this.sourceLanguage.name]
         this.targetLanguage.code = this.translationLanguageMap[this.targetLanguage.name]
 
       }
     })
-}
+
+
+    if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL || this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
+      this.checkBaiduToken();
+    }
+  }
+
+  private checkBaiduToken() {
+    if (typeof this.baiduToken === 'string') {
+      this.baiduToken = JSON.parse(this.baiduToken)
+    }
+    let currentTime = Date.now()
+    //判断 token 是否可用
+    let needReacquire = false
+    if (this.baiduToken.access_token == undefined || this.baiduToken.access_token.length == 0) {
+      needReacquire = true
+    }
+    if (this.baiduToken.expires_date < currentTime) {
+      needReacquire = true
+      console.error("baidu token 已过期")
+    }
+    if (needReacquire) {
+      BaiduHttpUtil.getAccessToken((error, data) => {
+        if (error) {
+          this.baiduToken = new BaiduToken()
+        } else {
+          this.baiduToken.access_token = data.access_token
+          this.baiduToken.expires_in = data.expires_in
+          this.baiduToken.expires_date = Date.now() + (data.expires_in * 1000)
+          this.baiduToken.error = null
+          this.baiduToken.error_description = null
+        }
+      })
+    }
+  }
 
   aboutToAppear() {
-
 
 
     this.translation = new TranslationResult()
@@ -115,10 +154,33 @@ struct Index {
 
   }
 
-  startTranslateByBaiduGeneralApi() {
-    BaiduHttpUtil.translateByTextGeneral(this.inputContent, (result) => {
+  private startTranslation() {
+    if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
+      this.startTranslateByBaiduGeneralApi()
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
+      this.startTranslationByBaiduAIGeneral()
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
+      this.startTranslationByBaiduAIDict()
+    } else if (this.translationApiType == TranslationAPI.YOUDAO_GENERAL) {
+      //todo
+    }
+  }
 
+  private startTranslateByBaiduGeneralApi() {
+    BaiduHttpUtil.translateByTextGeneral(this.inputContent, (result) => {
       this.translationResultStr = JSON.parse(result)['trans_result'][0]['dst'];
+    })
+  }
+
+  private startTranslationByBaiduAIGeneral() {
+    BaiduHttpUtil.translateByAIGeneral(this.inputContent, this.baiduToken.access_token, (result) => {
+      this.baiduAiGeneralTranslationResult = result
+    })
+  }
+
+  private startTranslationByBaiduAIDict() {
+    BaiduHttpUtil.translateByAIDict(this.inputContent, this.baiduToken.access_token, (result) => {
+
     })
   }
 
@@ -143,12 +205,12 @@ struct Index {
               clearTimeout(this.queryTimer)
             }
 
-            this.queryTimer = setTimeout(this.startTranslateByBaiduGeneralApi.bind(this), 500)
+            this.queryTimer = setTimeout(this.startTranslation.bind(this), 500)
 
           })
           .enterKeyType(EnterKeyType.Done)
           .onSubmit(() => {
-            this.startTranslateByBaiduGeneralApi();
+            this.startTranslation();
           })
 
         Image($r('app.media.setting')).width(24).height(24).margin(15).onClick(() => {
@@ -206,6 +268,8 @@ struct Index {
 
       if (this.translationResultStr.length > 0) {
         Text(this.translationResultStr).layoutWeight(1)
+      } else if (this.baiduAiGeneralTranslationResult) {
+        BaiduAIGeneralTranslationResultView({ translationResult: this.baiduAiGeneralTranslationResult }).layoutWeight(1)
       } else {
         TranslationResultView().layoutWeight(1)
       }

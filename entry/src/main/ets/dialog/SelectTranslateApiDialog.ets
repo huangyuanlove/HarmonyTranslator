@@ -28,11 +28,11 @@ aboutToAppear(){
       }.width('100%')
 
       Row() {
-        Radio({ value: TranslationAPI.BAIDU_MACHINE_GENERAL, group: 'radioGroup' })
-          .checked(this.selectedApi === TranslationAPI.BAIDU_MACHINE_GENERAL).enabled(true)
+        Radio({ value: TranslationAPI.BAIDU_AI_GENERAL, group: 'radioGroup' })
+          .checked(this.selectedApi === TranslationAPI.BAIDU_AI_GENERAL).enabled(true)
         .onChange((isChecked:boolean)=>{
           if(isChecked){
-            this.selectedApi = TranslationAPI.BAIDU_MACHINE_GENERAL
+            this.selectedApi = TranslationAPI.BAIDU_AI_GENERAL
           }
         })
 
