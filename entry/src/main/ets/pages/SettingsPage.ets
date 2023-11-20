@@ -47,6 +47,7 @@ struct SettingPage {
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
         this.selectTranslateApiDialogController.open()
+          //todo 选择api接口之后应该改校验对应的apiKey和apiSecret是否设置
       })
 
 
