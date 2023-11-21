@@ -1,30 +1,88 @@
 import router from '@ohos.router'
 import promptAction from '@ohos.promptAction'
 import SelectTranslateApiDialog from '../dialog/SelectTranslateApiDialog'
-import SetBaiduTextTranslatorInfoDialog from '../dialog/SetBaiduTextTranslatorInfoDialog'
-
+import SetTranslatorInfoDialog from '../dialog/SetTranslatorInfoDialog'
+import { TranslationAPI } from '../model/TranslationAPI'
+import {
+  baidu_text_translation_api_key,
+  baidu_text_translation_secret,
+  baidu_ai_translation_general_key,
+  baidu_ai_translation_general_secret,
+  baidu_ai_translation_dict_key,
+  baidu_ai_translation_dict_secret,
+  youdao_ai_translation_general_key,
+  youdao_ai_translation_general_secret,
+} from '../model/GeneralConfig'
 @Entry
 @Component
 struct SettingPage {
   selectTranslateApiDialogController: CustomDialogController = new CustomDialogController({
-    builder: SelectTranslateApiDialog(),
-    autoCancel: true,
-    customStyle: true
-  })
-  setBaiduTextTranslatorInfoDialogController: CustomDialogController = new CustomDialogController({
-    builder: SetBaiduTextTranslatorInfoDialog(),
+    builder: SelectTranslateApiDialog({
+      confirm: (apiType: string) => {
+        this.onSelectApi(apiType)
+      }
+    }),
     autoCancel: false,
-    customStyle: true
+    customStyle: true,
+
+  })
+  setTranslatorInfoDialogController: CustomDialogController = new CustomDialogController({
+    builder: SetTranslatorInfoDialog(),
+    autoCancel: false,
+    customStyle: true,
+
   })
 
-  aboutToAppear(){
-
-  }
-  aboutToDisappear(){
-
+  aboutToAppear() {
 
   }
 
+  aboutToDisappear() {
+
+  }
+
+  private onSelectApi(apiType: string):void {
+
+    let needShowSetInfoDialog :boolean = false
+    if (apiType == TranslationAPI.BAIDU_GENERAL) {
+      let key:string = AppStorage.Get(baidu_text_translation_api_key)
+      let secret:string = AppStorage.Get(baidu_text_translation_secret)
+      if(key && key.length >0 && secret && secret.length >0){
+        promptAction.showToast({message:"百度通用文本翻译已经设置"})
+      }else{
+        needShowSetInfoDialog = true
+      }
+    } else if (apiType == TranslationAPI.BAIDU_AI_GENERAL) {
+      let key:string = AppStorage.Get(baidu_ai_translation_general_key)
+      let secret:string = AppStorage.Get(baidu_ai_translation_general_secret)
+      if(key && key.length >0 && secret && secret.length >0){
+        promptAction.showToast({message:"百度机器翻译-文本翻译-通用版已经设置"})
+      }else{
+        needShowSetInfoDialog = true
+      }
+    } else if (apiType == TranslationAPI.BAIDU_AI_DICT) {
+      let key:string = AppStorage.Get(baidu_ai_translation_dict_key)
+      let secret:string = AppStorage.Get(baidu_ai_translation_dict_secret)
+      if(key && key.length >0 && secret && secret.length >0){
+        promptAction.showToast({message:"百度机器翻译-文本翻译-词典版已经设置"})
+      }else{
+        needShowSetInfoDialog = true
+      }
+    }else if(apiType == TranslationAPI.YOUDAO_GENERAL){
+      let key:string = AppStorage.Get(youdao_ai_translation_general_key)
+      let secret:string = AppStorage.Get(youdao_ai_translation_general_secret)
+      if(key && key.length >0 && secret && secret.length >0){
+        promptAction.showToast({message:"有道智云翻译已经设置"})
+      }else{
+        needShowSetInfoDialog = true
+      }
+    }
+    if(needShowSetInfoDialog){
+      this.setTranslatorInfoDialogController.open()
+    }
+
+
+  }
 
   build() {
     Column() {
@@ -47,14 +105,14 @@ struct SettingPage {
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
         this.selectTranslateApiDialogController.open()
-          //todo 选择api接口之后应该改校验对应的apiKey和apiSecret是否设置
+
       })
 
 
       Row() {
         Text("百度通用文本翻译").textAlign(TextAlign.Center).fontColor(Color.Black)
-        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(()=>{
-          router.pushUrl({url:'pages/ApplyTranslateKey',params:{url:'https://fanyi-api.baidu.com/product/11'}})
+        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(() => {
+          router.pushUrl({ url: 'pages/ApplyTranslateKey', params: { url: 'https://fanyi-api.baidu.com/product/11' } })
         })
         Blank()
         Image($r('app.media.right_arrow')).width(20).height(20)
@@ -65,14 +123,17 @@ struct SettingPage {
       .margin({ top: 15 })
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
-        this.setBaiduTextTranslatorInfoDialogController.open()
+        this.setTranslatorInfoDialogController.open()
       }
       )
 
       Row() {
         Text("百度机器翻译：文本翻译-通用版").textAlign(TextAlign.Center).fontColor(Color.Black)
-        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(()=>{
-          router.pushUrl({url:'pages/ApplyTranslateKey',params:{url:'https://ai.baidu.com/ai-doc/MT/4kqryjku9'}})
+        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(() => {
+          router.pushUrl({
+            url: 'pages/ApplyTranslateKey',
+            params: { url: 'https://ai.baidu.com/ai-doc/MT/4kqryjku9' }
+          })
         })
         Blank()
         Image($r('app.media.right_arrow')).width(20).height(20)
@@ -83,12 +144,16 @@ struct SettingPage {
       .margin({ top: 15 })
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
-        this.setBaiduTextTranslatorInfoDialogController.open()
+        this.setTranslatorInfoDialogController.open()
       })
+
       Row() {
         Text("百度机器翻译：文本翻译-词典版").textAlign(TextAlign.Center).fontColor(Color.Black)
-        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(()=>{
-          router.pushUrl({url:'pages/ApplyTranslateKey',params:{url:'https://ai.baidu.com/ai-doc/MT/nkqrzmbpc'}})
+        Image($r('app.media.tip')).width(20).height(20).margin({ left: 15 }).onClick(() => {
+          router.pushUrl({
+            url: 'pages/ApplyTranslateKey',
+            params: { url: 'https://ai.baidu.com/ai-doc/MT/nkqrzmbpc' }
+          })
         })
         Blank()
         Image($r('app.media.right_arrow')).width(20).height(20)

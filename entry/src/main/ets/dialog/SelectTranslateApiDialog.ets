@@ -3,7 +3,7 @@ import { TranslationAPI } from '../model/TranslationAPI';
 @CustomDialog
 export default struct SelectTranslateApiDialog {
   controller: CustomDialogController;
-  confirm:(api :TranslationAPI)=>void
+  confirm:(api :string)=>void
 
   @StorageLink(translation_api) translationApiType: string = TranslationAPI.BAIDU_GENERAL
   @State selectedApi:string = ''
@@ -42,7 +42,17 @@ aboutToAppear(){
       }.justifyContent(FlexAlign.Start).width('100%')
 
       Row() {
-        Radio({ value: 'Radio2', group: 'radioGroup' })
+        Radio({ value: TranslationAPI.BAIDU_AI_DICT, group: 'radioGroup' })
+          .checked(false).enabled(false)
+        Text(){
+          Span("百度机器翻译：文本翻译-词典版")
+          Span("开发中~~").fontColor(Color.Red)
+        }
+      }.justifyContent(FlexAlign.Start).width('100%')
+
+
+      Row() {
+        Radio({ value: TranslationAPI.YOUDAO_GENERAL, group: 'radioGroup' })
           .checked(false).enabled(false)
         Text(){
           Span("有道智云：文本翻译")
@@ -65,7 +75,9 @@ aboutToAppear(){
           .onClick(() => {
 
            this.translationApiType = this.selectedApi
-
+          if(this.confirm){
+            this.confirm(this.selectedApi)
+          }
             if (this.controller != undefined) {
               this.controller.close()
             }

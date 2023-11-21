@@ -15,6 +15,6 @@ export struct BaiduAIGeneralTranslationResultView {
       }
 
 
-    }
+    }.justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
   }
 }

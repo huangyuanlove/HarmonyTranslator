@@ -13,6 +13,10 @@ import {
   baidu_text_translation_secret,
   baidu_ai_translation_general_key,
   baidu_ai_translation_general_secret,
+  baidu_ai_translation_dict_key,
+  baidu_ai_translation_dict_secret,
+  youdao_ai_translation_general_key,
+  youdao_ai_translation_general_secret,
   source_language,
   target_language,
   BaiduToken,
@@ -26,6 +30,12 @@ PersistentStorage.PersistProp<string>(baidu_text_translation_api_key, '')
 PersistentStorage.PersistProp<string>(baidu_text_translation_secret, '')
 PersistentStorage.PersistProp<string>(baidu_ai_translation_general_key, '')
 PersistentStorage.PersistProp<string>(baidu_ai_translation_general_secret, '')
+
+PersistentStorage.PersistProp<string>(baidu_ai_translation_dict_key, '')
+PersistentStorage.PersistProp<string>(baidu_ai_translation_dict_secret, '')
+PersistentStorage.PersistProp<string>(youdao_ai_translation_general_key, '')
+PersistentStorage.PersistProp<string>(youdao_ai_translation_general_secret, '')
+
 PersistentStorage.PersistProp<string>(translation_api, TranslationAPI.BAIDU_GENERAL)
 
 

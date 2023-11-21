@@ -14,7 +14,15 @@ export const baidu_text_translation_secret:string = "baidu_text_translation_secr
 
 export const baidu_ai_translation_general_key :string = "baidu_ai_translation_general_key"
 export const baidu_ai_translation_general_secret :string = "baidu_ai_translation_general_secret"
+
+export const baidu_ai_translation_dict_key :string = "baidu_ai_translation_dict_key"
+export const baidu_ai_translation_dict_secret :string = "baidu_ai_translation_dict_secret"
+
 export const baidu_ai_translation_token:string = "baidu_ai_translation_token"
+
+export const youdao_ai_translation_general_key :string = "youdao_ai_translation_general_key"
+export const youdao_ai_translation_general_secret :string = "youdao_ai_translation_general_secret"
+
 
 export const translation_api:string = "translation_api"
 

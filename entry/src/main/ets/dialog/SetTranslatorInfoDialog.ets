@@ -10,7 +10,7 @@ import {
 import { TranslationAPI } from '../model/TranslationAPI';
 
 @CustomDialog
-export default struct SetBaiduTextTranslatorInfoDialog {
+export default struct SetTranslatorInfoDialog {
   controller: CustomDialogController;
   @State appID: string = ''
   @State secret: string = ''
@@ -24,6 +24,8 @@ export default struct SetBaiduTextTranslatorInfoDialog {
       return 'https://ai.baidu.com/ai-doc/MT/4kqryjku9'
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
       return 'https://ai.baidu.com/ai-doc/MT/nkqrzmbpc'
+    } else if(this.translationApiType == TranslationAPI.YOUDAO_GENERAL){
+      return 'https://ai.youdao.com/doc.s#guide'
     }
     return ''
   }
