@@ -3,12 +3,10 @@ import { BaiduAIGeneralTranslationResult, TranslateLanguage, TranslationGroup } 
 import { CryptoJS } from '@ohos/crypto-js'
 import {
   AccessTokenResult,
-OnBaiduAIGeneralTranslationCallback,
-OnBaiduGeneralTranslationCallback,
-OnGetAccessTokenCallback,
+  OnBaiduAIGeneralTranslationCallback,
+  OnBaiduGeneralTranslationCallback,
+  OnGetAccessTokenCallback,
   OnTranslationCallback,
-
-
 } from './CommonCallback';
 import {
   baidu_text_translation_api_key,
@@ -90,51 +88,54 @@ export class BaiduHttpUtil {
   }
 
 
-  static getAccessToken( callback: OnGetAccessTokenCallback) {
+  static getAccessToken(callback: OnGetAccessTokenCallback) {
 
     var apiKey: string = AppStorage.Get(baidu_ai_translation_general_key)
     var secretKey: string = AppStorage.Get(baidu_ai_translation_general_secret)
 
+    console.error(`获取百度机器翻译token: key--> ${apiKey} , secret--> ${secretKey}`)
+    if (apiKey && apiKey.length > 0 && secretKey && secretKey.length > 0) {
 
-    var url: string = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`
-    let httpRequest = http.createHttp();
-    httpRequest.request(url,
-      {
-        method: http.RequestMethod.POST,
-        header: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
-        usingCache: false, // 可选，默认为true
-        priority: 1, // 可选，默认为1
-        connectTimeout: 60000, // 可选，默认为60000ms
-        readTimeout: 60000, // 可选，默认为60000ms
-        usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
-      }, (err, data) => {
-        if (err) {
-          callback(err, null)
-        } else {
-          let result = JSON.parse(data.result.toString())
 
-          let error = result['error']
-          if (error) {
-            callback(error, null)
+      var url: string = `https://aip.baidubce.com/oauth/2.0/token?grant_type=client_credentials&client_id=${apiKey}&client_secret=${secretKey}`
+      let httpRequest = http.createHttp();
+      httpRequest.request(url,
+        {
+          method: http.RequestMethod.POST,
+          header: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          expectDataType: http.HttpDataType.STRING, // 可选，指定返回数据的类型
+          usingCache: false, // 可选，默认为true
+          priority: 1, // 可选，默认为1
+          connectTimeout: 60000, // 可选，默认为60000ms
+          readTimeout: 60000, // 可选，默认为60000ms
+          usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
+        }, (err, data) => {
+          if (err) {
+            callback(err, null)
           } else {
-            let accessTokenResult: AccessTokenResult = new AccessTokenResult()
-            accessTokenResult.access_token = result['access_token']
-            accessTokenResult.expires_in = result['expires_in']
-            callback(null, accessTokenResult)
+            let result = JSON.parse(data.result.toString())
+
+            let error = result['error']
+            if (error) {
+              callback(error, null)
+            } else {
+              let accessTokenResult: AccessTokenResult = new AccessTokenResult()
+              accessTokenResult.access_token = result['access_token']
+              accessTokenResult.expires_in = result['expires_in']
+              callback(null, accessTokenResult)
+            }
+
           }
-
         }
-      }
-    )
-
+      )
+    }
   }
 
 
-  static translateByAIGeneral(query:string,token:string,callback: OnBaiduAIGeneralTranslationCallback){
+  static translateByAIGeneral(query: string, token: string, callback: OnBaiduAIGeneralTranslationCallback) {
     var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
     var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
 
@@ -155,22 +156,22 @@ export class BaiduHttpUtil {
       connectTimeout: 60000, // 可选，默认为60000ms
       readTimeout: 60000, // 可选，默认为60000ms
       usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
-    },(error,data)=>{
+    }, (error, data) => {
 
 
-      if(error){
-        let tmp:BaiduAIGeneralTranslationResult = new BaiduAIGeneralTranslationResult();
+      if (error) {
+        let tmp: BaiduAIGeneralTranslationResult = new BaiduAIGeneralTranslationResult();
         tmp.errorCode = "-1"
         tmp.errorMessage = JSON.stringify(error)
-      }else{
-        let result :BaiduAIGeneralTranslationResult = BaiduAIGeneralTranslationResult.fromJSON(JSON.parse(data.result.toString()))
+      } else {
+        let result: BaiduAIGeneralTranslationResult = BaiduAIGeneralTranslationResult.fromJSON(JSON.parse(data.result.toString()))
         callback(result)
       }
     })
   }
 
 
-  static translateByAIDict( query: string, token: string, callback: OnTranslationCallback) {
+  static translateByAIDict(query: string, token: string, callback: OnTranslationCallback) {
 
     var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
     var to: string = AppStorage.Get<TranslateLanguage>(target_language).code

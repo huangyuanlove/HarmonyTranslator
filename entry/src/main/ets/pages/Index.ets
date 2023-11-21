@@ -59,7 +59,7 @@ struct Index {
   @State translationLanguageMap: Object = new Object();
 
   //百度机器通用文本翻译
-  @State baiduAiGeneralTranslationResult: BaiduAIGeneralTranslationResult = undefined
+  @Provide('baidu_ai_general_translation_result') baiduAiGeneralTranslationResult: BaiduAIGeneralTranslationResult = undefined
 
   //计时器实现停止输入立即翻译
   private queryTimer: number = 0;
@@ -105,11 +105,12 @@ struct Index {
 
 
     if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL || this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
-      this.checkBaiduToken();
+      this.checkBaiduToken(undefined);
     }
   }
 
-  private checkBaiduToken() {
+
+  private checkBaiduToken(onCheckDone:(success:boolean)=>void) {
     if (typeof this.baiduToken === 'string') {
       this.baiduToken = JSON.parse(this.baiduToken)
     }
@@ -131,19 +132,26 @@ struct Index {
           tmp.error ='获取百度token出错'
           tmp.error_description =JSON.stringify(error)
           this.baiduToken = tmp
+          if(onCheckDone){
+            onCheckDone(false);
+          }
         } else {
           let tmp:BaiduToken = new BaiduToken()
-
-
           tmp.access_token = data.access_token
           tmp.expires_in = data.expires_in
           tmp.expires_date = Date.now() + (data.expires_in * 1000)
           tmp.error = null
           tmp.error_description = null
           this.baiduToken = tmp
+          if(onCheckDone){
+            onCheckDone(true);
+          }
         }
       })
     }else{
+      if(onCheckDone){
+        onCheckDone(true);
+      }
       console.error("baidu token 正常")
     }
   }
@@ -197,9 +205,16 @@ struct Index {
   }
 
   private startTranslationByBaiduAIGeneral() {
-    BaiduHttpUtil.translateByAIGeneral(this.inputContent, this.baiduToken.access_token, (result) => {
-      this.baiduAiGeneralTranslationResult = result
-    })
+    this.checkBaiduToken((success)=>{
+      if(success){
+        BaiduHttpUtil.translateByAIGeneral(this.inputContent, this.baiduToken.access_token, (result) => {
+          this.baiduAiGeneralTranslationResult = result
+        })
+      }else{
+        prompt.showToast({message:'获取百度机器翻译token出错'})
+      }
+    });
+
   }
 
   private startTranslationByBaiduAIDict() {
@@ -293,7 +308,7 @@ struct Index {
       if (this.translationResultStr.length > 0) {
         Text(this.translationResultStr).layoutWeight(1)
       } else if (this.baiduAiGeneralTranslationResult) {
-        BaiduAIGeneralTranslationResultView({ translationResult: this.baiduAiGeneralTranslationResult }).layoutWeight(1)
+        BaiduAIGeneralTranslationResultView().layoutWeight(1)
       } else {
         TranslationResultView().layoutWeight(1)
       }

@@ -65,7 +65,7 @@ export class BaiduAIGeneralTranslationResult{
       if (trans_result_arr && trans_result_arr.length > 0) {
         tmp.result = []
         trans_result_arr.forEach(trans_result => {
-          tmp.result.push(trans_result['dst'],trans_result['src']);
+          tmp.result.push( {dst: trans_result['dst'],src:trans_result['src']});
         })
       }
     }
