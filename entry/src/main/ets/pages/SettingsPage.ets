@@ -164,9 +164,7 @@ struct SettingPage {
       .margin({ top: 15 })
       .backgroundColor(0xE5E5E5)
       .onClick(() => {
-        promptAction.showToast({ message: "开发中~~" })
-
-
+        this.setTranslatorInfoDialogController.open()
       })
 
       Row() {

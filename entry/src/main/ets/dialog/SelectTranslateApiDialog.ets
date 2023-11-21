@@ -43,10 +43,14 @@ aboutToAppear(){
 
       Row() {
         Radio({ value: TranslationAPI.BAIDU_AI_DICT, group: 'radioGroup' })
-          .checked(false).enabled(false)
+          .checked(this.selectedApi === TranslationAPI.BAIDU_AI_DICT).enabled(true)
+          .onChange((isChecked:boolean)=>{
+            if(isChecked){
+              this.selectedApi = TranslationAPI.BAIDU_AI_DICT
+            }
+          })
         Text(){
           Span("百度机器翻译：文本翻译-词典版")
-          Span("开发中~~").fontColor(Color.Red)
         }
       }.justifyContent(FlexAlign.Start).width('100%')
 

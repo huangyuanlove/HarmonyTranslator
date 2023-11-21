@@ -66,6 +66,7 @@ export class AVPlayerHelper {
     if(this.avPlayer){
       this.avPlayer.reset()
       this.avPlayer.url = url
+      console.error("开始播放--> " + url)
     }
   }
   reset(){

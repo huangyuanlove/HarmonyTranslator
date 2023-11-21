@@ -1,8 +1,9 @@
 import http from '@ohos.net.http';
-import { BaiduAIGeneralTranslationResult, TranslateLanguage, TranslationGroup } from '../model/TranslateResult';
+import { BaiduAIDictTranslationResult, BaiduAIGeneralTranslationResult, TranslateLanguage, TranslationGroup } from '../model/TranslateResult';
 import { CryptoJS } from '@ohos/crypto-js'
 import {
   AccessTokenResult,
+	OnBaiduAIDictTranslationCallback,
   OnBaiduAIGeneralTranslationCallback,
   OnBaiduGeneralTranslationCallback,
   OnGetAccessTokenCallback,
@@ -27,11 +28,11 @@ export class BaiduHttpUtil {
    */
   static translateByTextGeneral(query: string, callBack: OnBaiduGeneralTranslationCallback) {
 
-    var api_key: string = AppStorage.Get(baidu_text_translation_api_key)
-    var secret: string = AppStorage.Get(baidu_text_translation_secret)
+    let api_key: string = AppStorage.Get(baidu_text_translation_api_key)
+    let secret: string = AppStorage.Get(baidu_text_translation_secret)
 
-    var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
-    var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
+    let from: string = AppStorage.Get<TranslateLanguage>(source_language).code
+    let to: string = AppStorage.Get<TranslateLanguage>(target_language).code
 
     if (!api_key || !secret) {
       console.error("请先设置百度通用文本翻译appid 和 secret")
@@ -49,13 +50,13 @@ export class BaiduHttpUtil {
       return
     }
 
-    var salt = new Date().getTime()
-    var raw = `${api_key}${query}${salt}${secret}`
+    let salt = new Date().getTime()
+    let raw = `${api_key}${query}${salt}${secret}`
     console.error(`通用文本翻譯 raw ${raw}`)
-    var md5Result = CryptoJS.MD5(raw)
+    let md5Result = CryptoJS.MD5(raw)
     console.error(`通用文本翻譯 md5 ${md5Result}`)
 
-    var url: string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURI(query)}&from=${from}&to=${to}&appid=${api_key}&salt=${salt}&sign=${md5Result}`
+    let url: string = `https://fanyi-api.baidu.com/api/trans/vip/translate?q=${encodeURI(query)}&from=${from}&to=${to}&appid=${api_key}&salt=${salt}&sign=${md5Result}`
     console.error("请求地址-->" + url)
     let httpRequest = http.createHttp()
     httpRequest.request(url,
@@ -90,8 +91,8 @@ export class BaiduHttpUtil {
 
   static getAccessToken(callback: OnGetAccessTokenCallback) {
 
-    var apiKey: string = AppStorage.Get(baidu_ai_translation_general_key)
-    var secretKey: string = AppStorage.Get(baidu_ai_translation_general_secret)
+    let apiKey: string = AppStorage.Get(baidu_ai_translation_general_key)
+    let secretKey: string = AppStorage.Get(baidu_ai_translation_general_secret)
 
     console.error(`获取百度机器翻译token: key--> ${apiKey} , secret--> ${secretKey}`)
     if (apiKey && apiKey.length > 0 && secretKey && secretKey.length > 0) {
@@ -136,8 +137,8 @@ export class BaiduHttpUtil {
 
 
   static translateByAIGeneral(query: string, token: string, callback: OnBaiduAIGeneralTranslationCallback) {
-    var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
-    var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
+    let from: string = AppStorage.Get<TranslateLanguage>(source_language).code
+    let to: string = AppStorage.Get<TranslateLanguage>(target_language).code
 
 
     console.error(`from=${from}  to=${to}  q=${query}  token=${token}`)
@@ -171,16 +172,16 @@ export class BaiduHttpUtil {
   }
 
 
-  static translateByAIDict(query: string, token: string, callback: OnTranslationCallback) {
+  static translateByAIDict(query: string, token: string, callback: OnBaiduAIDictTranslationCallback) {
 
-    var from: string = AppStorage.Get<TranslateLanguage>(source_language).code
-    var to: string = AppStorage.Get<TranslateLanguage>(target_language).code
+    let from: string = AppStorage.Get<TranslateLanguage>(source_language).code
+    let to: string = AppStorage.Get<TranslateLanguage>(target_language).code
 
 
     console.error(`from=${from}  to=${to}  q=${query}  token=${token}`)
 
     let httpRequest = http.createHttp();
-    httpRequest.request('https://aip.baidubce.com/rpc/2.0/mt/texttrans/v1?access_token=' + token, {
+    httpRequest.request('https://aip.baidubce.com/rpc/2.0/mt/texttrans-with-dict/v1?access_token=' + token, {
       method: http.RequestMethod.POST,
       header: { 'Content-Type': 'application/json;charset=utf-8' },
       extraData: {
@@ -195,39 +196,16 @@ export class BaiduHttpUtil {
       readTimeout: 60000, // 可选，默认为60000ms
       usingProtocol: http.HttpProtocol.HTTP1_1, // 可选，协议类型默认值由系统自动指定
     },
-      (err, data) => {
-
-        var tmp: TranslationGroup = new TranslationGroup();
-        tmp.apiName = '百度机器翻译词典版'
-        tmp.log_id = rootJson['log_id']
+      (error, data) => {
 
 
-        if (err) {
-          tmp.error = JSON.stringify(err).toString();
-          callback(tmp)
-          console.error("机器通用文本翻译结果--> " + tmp.error)
+        if (error) {
+          let tmp: BaiduAIDictTranslationResult = new BaiduAIDictTranslationResult();
+          tmp.errorCode = "-1"
+          tmp.errorMessage = JSON.stringify(error)
         } else {
-
-          var rootJson = JSON.parse(data.result.toString());
-          console.error("机器通用文本翻译结果--> " + data.result.toString())
-          var errorCode = rootJson['error_code']
-          var errorMsg = rootJson['error_msg']
-          if (errorCode != undefined) {
-            tmp.error = `errorCode:${errorCode} ,errorMsg:${errorMsg}`
-            callback(tmp)
-            return
-          }
-
-          var resultJSON = rootJson['result']
-
-          var trans_result_arr: JSON [] = resultJSON['trans_result']
-          if (trans_result_arr && trans_result_arr.length > 0) {
-            tmp.dst = [];
-            trans_result_arr.forEach(trans_result => {
-              tmp.dst.push(trans_result['dst']);
-            })
-          }
-          callback(tmp)
+          let result: BaiduAIDictTranslationResult = BaiduAIDictTranslationResult.fromJSON(JSON.parse(data.result.toString()))
+          callback(result)
         }
 
       }

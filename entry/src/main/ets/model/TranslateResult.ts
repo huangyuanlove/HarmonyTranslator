@@ -46,6 +46,32 @@ export class LanguageGroup {
   languages: TranslateLanguage[]
 }
 
+export class BaiduAIDictTranslationResult{
+  errorCode:string
+  errorMessage:string
+  logId:string
+  result:{dst:string,dst_tts:string, src:string,src_tts:string,dict:string}[]
+
+  static fromJSON(json:object):BaiduAIDictTranslationResult{
+    let tmp = new BaiduAIDictTranslationResult()
+    tmp.errorCode = json['error_code']
+    tmp.errorMessage = json['error_msg']
+    tmp.logId = json['log_id']
+    let resultJSON = json['result']
+    if(resultJSON){
+      let trans_result_arr: JSON [] = resultJSON['trans_result']
+      if (trans_result_arr && trans_result_arr.length > 0) {
+        tmp.result = []
+        trans_result_arr.forEach(trans_result => {
+          tmp.result.push( {dst: trans_result['dst'],dst_tts:trans_result['dst_tts'],src:trans_result['src'],src_tts:trans_result['src_tts'],dict:trans_result['dict']});
+        })
+      }
+    }
+    return tmp;
+  }
+
+}
+
 
 export class BaiduAIGeneralTranslationResult{
   errorCode:string
@@ -59,9 +85,9 @@ export class BaiduAIGeneralTranslationResult{
     tmp.errorCode = json['error_code']
     tmp.errorMessage = json['error_msg']
     tmp.logId = json['log_id']
-    var resultJSON = json['result']
+    let resultJSON = json['result']
     if(resultJSON){
-      var trans_result_arr: JSON [] = resultJSON['trans_result']
+      let trans_result_arr: JSON [] = resultJSON['trans_result']
       if (trans_result_arr && trans_result_arr.length > 0) {
         tmp.result = []
         trans_result_arr.forEach(trans_result => {

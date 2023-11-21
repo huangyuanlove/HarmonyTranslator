@@ -1,5 +1,5 @@
 import prompt from '@ohos.promptAction';
-import { TranslationResult, TranslateLanguage, BaiduAIGeneralTranslationResult } from '../model/TranslateResult'
+import { TranslationResult, TranslateLanguage, BaiduAIGeneralTranslationResult, BaiduAIDictTranslationResult } from '../model/TranslateResult'
 import { TranslationAPI } from '../model/TranslationAPI'
 import { MainPageTopSwiper } from '../view/MainPageTopSwiper';
 import { BaiduHttpUtil } from '../util/BaiduHttpUtils';
@@ -24,6 +24,7 @@ import {
 import common from '@ohos.app.ability.common';
 import buffer from '@ohos.buffer';
 import { BaiduAIGeneralTranslationResultView } from '../view/BaiduAIGeneralTranslationResultView';
+import BaiduAIDictTranslationResultView from '../view/BaiduAIDictTranslationResultView';
 //只能在UI页面使用，否则无法持久化数据
 //用到的属性必须要要先初始化，否则不会被加载到AppStorage中
 PersistentStorage.PersistProp<string>(baidu_text_translation_api_key, '')
@@ -60,6 +61,7 @@ struct Index {
 
   //百度机器通用文本翻译
   @Provide('baidu_ai_general_translation_result') baiduAiGeneralTranslationResult: BaiduAIGeneralTranslationResult = undefined
+  @Provide('baidu_ai_dict_translation_result') baiduAiDictTranslationResult: BaiduAIDictTranslationResult = undefined
 
   //计时器实现停止输入立即翻译
   private queryTimer: number = 0;
@@ -185,17 +187,22 @@ struct Index {
   }
 
   private startTranslation() {
+    this.cleanTranslationResult()
     if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
-      this.baiduAiGeneralTranslationResult = undefined
       this.startTranslateByBaiduGeneralApi()
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
-      this.translationResultStr = ''
       this.startTranslationByBaiduAIGeneral()
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
       this.startTranslationByBaiduAIDict()
     } else if (this.translationApiType == TranslationAPI.YOUDAO_GENERAL) {
       //todo
     }
+  }
+
+  private cleanTranslationResult():void{
+    this.baiduAiGeneralTranslationResult = undefined
+    this.baiduAiDictTranslationResult = undefined
+    this.translationResultStr = ''
   }
 
   private startTranslateByBaiduGeneralApi() {
@@ -218,9 +225,17 @@ struct Index {
   }
 
   private startTranslationByBaiduAIDict() {
-    BaiduHttpUtil.translateByAIDict(this.inputContent, this.baiduToken.access_token, (result) => {
-
+    this.checkBaiduToken((success)=>{
+      if(success){
+        BaiduHttpUtil.translateByAIDict(this.inputContent, this.baiduToken.access_token, (result) => {
+          this.baiduAiDictTranslationResult = result
+        })
+      }else{
+        prompt.showToast({message:'获取百度机器翻译token出错'})
+      }
     })
+
+
   }
 
   build() {
@@ -309,7 +324,10 @@ struct Index {
         Text(this.translationResultStr).layoutWeight(1)
       } else if (this.baiduAiGeneralTranslationResult) {
         BaiduAIGeneralTranslationResultView().layoutWeight(1)
-      } else {
+      } else if(this.baiduAiDictTranslationResult){
+        BaiduAIDictTranslationResultView().layoutWeight(1)
+      }
+      else {
         TranslationResultView().layoutWeight(1)
       }
 
