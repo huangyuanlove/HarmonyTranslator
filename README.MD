@@ -73,3 +73,5 @@ struct Tmp {
 > 可以被JSON.stringify()和JSON.parse()重构的对象。例如Date, Map, Set等内置类型则不支持，以及对象的属性方法不支持持久化。<br/>
 
 看到论坛有同样的求助，有开发者回复说他是将对象转成字符串保存的，使用的时候再parse一下。
+
+#### 剪贴板 pasteboard.getSystemPasteboard()

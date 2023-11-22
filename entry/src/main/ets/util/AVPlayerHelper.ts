@@ -1,5 +1,10 @@
 import media from '@ohos.multimedia.media';
+
 export class AVPlayerHelper {
+
+
+
+
   private constructor() {
 
 
@@ -8,18 +13,16 @@ export class AVPlayerHelper {
       if (video != null) {
         this.avPlayer = video;
         console.error(`createAVPlayer success `);
-        this.setAVPlayerStateChange()
+        this.setAVPlayerStateChange(null)
       } else {
         console.error(`createAVPlayer fail, error message:${error.message}`);
       }
     });
   }
-
   public static instance: AVPlayerHelper = new AVPlayerHelper();
-
-
   private avPlayer;
-  setAVPlayerStateChange() {
+
+  setAVPlayerStateChange(callback:AVPlayerStateCallback ) {
     if (this.avPlayer != undefined) {
       this.avPlayer.on('stateChange', async (state, reason) => {
         switch (state) {
@@ -35,6 +38,7 @@ export class AVPlayerHelper {
             this.avPlayer.play()
             break;
           case 'playing':
+
             console.error('state playing called')
             break;
           case 'paused':
@@ -58,22 +62,29 @@ export class AVPlayerHelper {
             console.info('unkown state :' + state)
             break;
         }
+        if(callback){
+          callback(state)
+        }
+
       })
     }
   }
 
-  playWithUrl(url:string){
-    if(this.avPlayer){
-      this.avPlayer.reset()
+  playWithUrl(url: string,callback:AVPlayerStateCallback) {
+    if (this.avPlayer) {
+      this.resetAVPlayer();
+      this.setAVPlayerStateChange(callback)
       this.avPlayer.url = url
       console.error("开始播放--> " + url)
     }
   }
-  reset(){
-    if(this.avPlayer){
+
+  resetAVPlayer() {
+    if (this.avPlayer) {
       this.avPlayer.reset();
     }
   }
-
-
+}
+export interface AVPlayerStateCallback{
+  (state:string):void
 }

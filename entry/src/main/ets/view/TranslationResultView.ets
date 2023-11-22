@@ -1,4 +1,4 @@
-import { AVPlayerHelper } from '../model/AVPlayerHelper';
+import { AVPlayerHelper } from '../util/AVPlayerHelper';
 import { TranslationGroup, TranslationResult } from '../model/TranslateResult';
 
 

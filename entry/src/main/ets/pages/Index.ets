@@ -334,6 +334,6 @@ struct Index {
       MainPageTopSwiper()
 
     }
-    .width('100%').padding({ top: 48 })
+    .width('100%').padding({ top: 48 }).justifyContent(FlexAlign.Start).layoutWeight(1)
   }
 }
