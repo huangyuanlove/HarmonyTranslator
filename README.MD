@@ -75,3 +75,23 @@ struct Tmp {
 看到论坛有同样的求助，有开发者回复说他是将对象转成字符串保存的，使用的时候再parse一下。
 
 #### 剪贴板 pasteboard.getSystemPasteboard()
+
+
+
+在使用剪贴板时需要先创建剪贴板数据，
+创建方法如下 
+
+> createData(mimeType: string, value: ValueType): PasteData
+> createRecord(mimeType: string, value: ValueType):PasteDataRecord;
+
+第一个参数含义为：自定义数据的MIME类型。 文档中 [鸿蒙开发api参考](https://developer.harmonyos.com/cn/docs/documentation/doc-references-V3/js-apis-pasteboard-0000001544384177-V3#ZH-CN_TOPIC_0000001523648478__pasteboardcreatedata9)
+中写的示例
+```typescript
+import pasteboard from '@ohos.pasteboard';
+let dataXml = 'Hello World';
+let pasteDataRecord = pasteboard.createRecord('app/xml', dataXml);
+```
+实际中发现时不能使用这自定义的`app/xml`值，会崩溃，只能使用pasteboard中预定义的MIME类型
+
+
+
