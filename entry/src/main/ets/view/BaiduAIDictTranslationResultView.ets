@@ -10,48 +10,18 @@ export default struct BaiduAIDictTranslationResultView {
 
   aboutToAppear() {
     this.avPlayerHelper = AVPlayerHelper.instance
-    // this.avPlayerHelper.playStateCallBack = (state)=>{
-    //   switch (state){
-    //     case 'idle':
-    //       console.error('state idle called')
-    //       break;
-    //     case 'initialized':
-    //       console.error('initialized prepared called')
-    //
-    //       break;
-    //     case 'prepared':
-    //       console.error('state prepared called')
-    //
-    //       break;
-    //     case 'playing':
-    //
-    //       console.error('state playing called')
-    //       break;
-    //     case 'paused':
-    //       console.error('state paused called')
-    //       break;
-    //     case 'completed':
-    //       console.error('state completed called')
-    //
-    //       break;
-    //     case 'stopped':
-    //       console.error('state stopped called')
-    //       break;
-    //     case 'released':
-    //       console.error('state released called')
-    //       break;
-    //     case 'error':
-    //       console.error('state error called')
-    //
-    //       break;
-    //     default:
-    //       console.info('unkown state :' + state)
-    //       break;
-    //   }
-
-    // }
   }
 
+
+
+
+  @Builder
+  buildDictView(json:Object):void{
+    if(json){
+
+
+    }
+  }
 
 
   build() {
@@ -59,10 +29,10 @@ export default struct BaiduAIDictTranslationResultView {
       if (this.result.errorMessage && this.result.errorMessage.length > 0) {
         Text(JSON.stringify(this.result))
       } else {
-        ForEach(this.result.result, ({dst,dst_tts,src,src_tts,dict}) => {
+
           Column() {
             Row() {
-              Text(dst).fontSize(26).margin(10)
+              Text(this.result.result.dst).fontSize(26).margin(10)
               ImageAnimator().margin(10)
                 .images([
                   { src: $r('app.media.voice1'), width: 24, height: 24 },
@@ -74,7 +44,7 @@ export default struct BaiduAIDictTranslationResultView {
                 .onClick(() => {
 
 
-                  this.avPlayerHelper.playWithUrl(dst_tts,(state:string)=>{
+                  this.avPlayerHelper.playWithUrl(this.result.result.dst_tts,(state:string)=>{
                       switch(state){
                           case 'playing':
                             console.error('dst state playing called')
@@ -105,7 +75,7 @@ export default struct BaiduAIDictTranslationResultView {
             }.width('100%').justifyContent(FlexAlign.Start)
 
             Row() {
-              Text(src).fontSize(26).margin(10)
+              Text(this.result.result.src).fontSize(26).margin(10)
               ImageAnimator()
                 .margin(10)
                 .images([
@@ -116,7 +86,7 @@ export default struct BaiduAIDictTranslationResultView {
                 .duration(1000)
                 .state(this.playSrcTTSAnimatorState)
                 .onClick(() => {
-                  this.avPlayerHelper.playWithUrl(src_tts,(state:string)=>{
+                  this.avPlayerHelper.playWithUrl(this.result.result.src_tts,(state:string)=>{
                     switch(state){
                       case 'playing':
                         console.error('src state playing called')
@@ -144,7 +114,7 @@ export default struct BaiduAIDictTranslationResultView {
                 .height(24)
             }.width('100%').justifyContent(FlexAlign.Start)
 
-            Text(dict)
+            Text(JSON.stringify(this.result.result.dict))
           }
           .margin({ left: 15, right: 15, top: 20 })
           .padding(10)
@@ -152,7 +122,7 @@ export default struct BaiduAIDictTranslationResultView {
           .backdropBlur(10)
           .width('100%')
           .borderRadius(4)
-        })
+
 
       }
 
