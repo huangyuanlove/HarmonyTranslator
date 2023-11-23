@@ -1,4 +1,5 @@
-import { BaiduAIDictTranslationResult } from '../model/TranslateResult'
+import promptAction from '@ohos.promptAction';
+import { BaiduAIDictTranslationResult, PartMeans } from '../model/TranslateResult'
 import { AVPlayerHelper,AVPlayerStateCallback } from '../util/AVPlayerHelper';
 
 @Component
@@ -22,6 +23,48 @@ export default struct BaiduAIDictTranslationResultView {
 
     }
   }
+
+  @Builder
+  buildSimpleMeans(partMeans:PartMeans[]):void{
+      if(partMeans){
+        Flex({ wrap: FlexWrap.Wrap }){
+          ForEach(partMeans,(partMean:PartMeans)=>{
+            Row(){
+              if(partMean.part){
+                Text(partMean.part).fontStyle(FontStyle.Italic)
+              }
+
+
+              Text(partMean.wordMean).fontSize(16) .textAlign(TextAlign.Center).fontColor(Color.White).margin({left:4}).fontColor(0x666666)
+
+            }.padding({ top: 4, bottom: 4, left: 15, right: 15 })
+
+
+
+            .borderRadius(10)
+            .margin(10)
+            .borderWidth(1)
+            .borderColor(0x333333)
+            .onClick(() => {
+              if(partMean.means){
+                let message =''
+                partMean.means.forEach((value)=>{
+                  message += value
+                  message += "\n"
+                })
+
+                promptAction.showDialog({title:"简明释义",message:message})
+              }else{
+                promptAction.showToast({message:'没有英文释义'})
+              }
+
+            })
+
+          })
+        }
+      }
+  }
+
 
 
   build() {
@@ -113,14 +156,17 @@ export default struct BaiduAIDictTranslationResultView {
                 .width(24)
                 .height(24)
             }.width('100%').justifyContent(FlexAlign.Start)
+            Text('简明释义:来源' +this.result.result.dict.simpleMeans.from +"[ " + this.result.result.dict.simpleMeans.symbols.wordSymbol +" ]")
+            this.buildSimpleMeans(this.result.result.dict.simpleMeans.symbols.means)
 
-            Text(JSON.stringify(this.result.result.dict))
+            // Text(JSON.stringify(this.result.result.dict))
           }
           .margin({ left: 15, right: 15, top: 20 })
           .padding(10)
           .backgroundColor(0XEEEEEE)
           .backdropBlur(10)
           .width('100%')
+          .alignItems(HorizontalAlign.Start)
           .borderRadius(4)
 
 
