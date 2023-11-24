@@ -187,6 +187,11 @@ struct Index {
   }
 
   private startTranslation() {
+
+    if(!this.inputContent || this.inputContent.length ==0){
+      return
+    }
+
     this.cleanTranslationResult()
     if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
       this.startTranslateByBaiduGeneralApi()
