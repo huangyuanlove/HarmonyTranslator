@@ -192,7 +192,6 @@ struct Index {
       return
     }
 
-    this.cleanTranslationResult()
     if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
       this.startTranslateByBaiduGeneralApi()
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
@@ -202,12 +201,6 @@ struct Index {
     } else if (this.translationApiType == TranslationAPI.YOUDAO_GENERAL) {
       //todo
     }
-  }
-
-  private cleanTranslationResult():void{
-    this.baiduAiGeneralTranslationResult = undefined
-    this.baiduAiDictTranslationResult = undefined
-    this.translationResultStr = ''
   }
 
   private startTranslateByBaiduGeneralApi() {
@@ -239,14 +232,30 @@ struct Index {
         prompt.showToast({message:'获取百度机器翻译token出错'})
       }
     })
+  }
+
+
+  @Builder
+  buildTranslationResult(){
+
+    if (this.translationApiType == TranslationAPI.BAIDU_GENERAL) {
+      Text(this.translationResultStr).layoutWeight(1)
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
+      BaiduAIGeneralTranslationResultView().layoutWeight(1)
+    } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
+      BaiduAIDictTranslationResultView().layoutWeight(1)
+    } else if (this.translationApiType == TranslationAPI.YOUDAO_GENERAL) {
+      //todo
+    }else{
+      TranslationResultView().layoutWeight(1)
+    }
 
 
   }
 
+
   build() {
     Column() {
-
-
       Flex({ alignItems: ItemAlign.Center }) {
         TextInput({ placeholder: $r('app.string.text_to_be_translated') })
           .layoutWeight(1)
@@ -325,16 +334,7 @@ struct Index {
         }.justifyContent(FlexAlign.SpaceAround).width('100%')
       }.width('100%')
 
-      if (this.translationResultStr.length > 0) {
-        Text(this.translationResultStr).layoutWeight(1)
-      } else if (this.baiduAiGeneralTranslationResult) {
-        BaiduAIGeneralTranslationResultView().layoutWeight(1)
-      } else if(this.baiduAiDictTranslationResult){
-        BaiduAIDictTranslationResultView().layoutWeight(1)
-      }
-      else {
-        TranslationResultView().layoutWeight(1)
-      }
+      this.buildTranslationResult()
 
       MainPageTopSwiper()
 
