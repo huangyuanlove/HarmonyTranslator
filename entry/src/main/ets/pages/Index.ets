@@ -61,7 +61,8 @@ struct Index {
 
   //百度机器通用文本翻译
   @Provide('baidu_ai_general_translation_result') baiduAiGeneralTranslationResult: BaiduAIGeneralTranslationResult = undefined
-  @Provide('baidu_ai_dict_translation_result') baiduAiDictTranslationResult: BaiduAIDictTranslationResult = undefined
+  // @Provide('baidu_ai_dict_translation_result') baiduAiDictTranslationResult: BaiduAIDictTranslationResult = undefined
+  @State baiduAiDictTranslationResult: BaiduAIDictTranslationResult = undefined
 
   //计时器实现停止输入立即翻译
   private queryTimer: number = 0;
@@ -243,7 +244,7 @@ struct Index {
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_GENERAL) {
       BaiduAIGeneralTranslationResultView().layoutWeight(1)
     } else if (this.translationApiType == TranslationAPI.BAIDU_AI_DICT) {
-      BaiduAIDictTranslationResultView().layoutWeight(1)
+      BaiduAIDictTranslationResultView({result:$baiduAiDictTranslationResult}).layoutWeight(1)
     } else if (this.translationApiType == TranslationAPI.YOUDAO_GENERAL) {
       //todo
     }else{
@@ -321,6 +322,7 @@ struct Index {
                     confirm: this.onSelectLanguage.bind(this),
                     languageMap: this.translationLanguageMap,
                     selectFromLang: this.changeFromLanguageType
+
 
                   }),
                   autoCancel: true,

@@ -4,7 +4,8 @@ import { AVPlayerHelper } from '../util/AVPlayerHelper';
 
 @Component
 export default struct BaiduAIDictTranslationResultView {
-  @Consume('baidu_ai_dict_translation_result') result: BaiduAIDictTranslationResult
+  // @Consume('baidu_ai_dict_translation_result') result: BaiduAIDictTranslationResult
+  @Link result: BaiduAIDictTranslationResult
   @State playSrcTTSAnimatorState: AnimationStatus = AnimationStatus.Initial
   @State playDstTTSAnimatorState: AnimationStatus = AnimationStatus.Initial
   private avPlayerHelper: AVPlayerHelper;
@@ -22,26 +23,26 @@ export default struct BaiduAIDictTranslationResultView {
   @Builder
   buildSimpleMeans( $$:{simpleMeans: BaiduAIDictSimpleMeans}): void {
     Column(){
-      if($$.simpleMeans.from && $$.simpleMeans.from.length > 0){
+      if($$.simpleMeans?.from){
         Text(){
           Span('来源').fontSize(16).fontColor(Color.Black)
-          Span($$.simpleMeans.from).fontSize(18).fontColor(Color.Red).margin({left:10})
+          Span($$.simpleMeans?.from).fontSize(18).fontColor(Color.Red).margin({left:10})
         }.fontSize(16)
       }
-      if($$.simpleMeans.word_symbol && $$.simpleMeans.word_symbol.length > 0){
+      if($$.simpleMeans?.word_symbol && $$.simpleMeans?.word_symbol.length > 0){
         Text(){
           Span('读音').fontSize(16).fontColor(Color.Black)
-          Span($$.simpleMeans.word_symbol).fontSize(18).fontColor(Color.Red).margin({left:10})
+          Span($$.simpleMeans?.word_symbol).fontSize(18).fontColor(Color.Red).margin({left:10})
         }.fontSize(16)
       }
-      if($$.simpleMeans.means && $$.simpleMeans.means.length >0){
+      if($$.simpleMeans?.means){
         Flex({wrap:FlexWrap.Wrap}){
-          ForEach($$.simpleMeans.means ,(means: MeansInSimple)=>{
+          ForEach($$.simpleMeans?.means ,(means: MeansInSimple)=>{
             Row(){
-              if(means.part && means.part.length > 0){
-                Text(means.part).fontStyle(FontStyle.Italic)
+              if(means?.part && means.part.length > 0){
+                Text(means?.part).fontStyle(FontStyle.Italic)
               }
-              Text(means.text)
+              Text(means?.text)
                 .fontSize(16)
                 .textAlign(TextAlign.Center)
                 .fontColor(Color.White)
@@ -56,9 +57,9 @@ export default struct BaiduAIDictTranslationResultView {
             .borderWidth(1)
             .borderColor(0x333333)
             .onClick(() => {
-              if (means.means) {
+              if (means?.means) {
                 let message = ''
-                means.means.forEach((value) => {
+                means?.means?.forEach((value) => {
                   message += value
                   message += "\n"
                 })
@@ -172,9 +173,9 @@ export default struct BaiduAIDictTranslationResultView {
           }.width('100%').justifyContent(FlexAlign.Start).margin({top :10})
 
 
-          if(this.result.result.dict && this.result.result.dict.simpleMeans){
-            this.buildSimpleMeans({simpleMeans: this.result.result.dict.simpleMeans})
-          }
+
+            this.buildSimpleMeans({simpleMeans: this.result.result.dict?.simpleMeans})
+
 
         }
         .margin({ left: 15, right: 15, top: 20 })
