@@ -94,4 +94,75 @@ let pasteDataRecord = pasteboard.createRecord('app/xml', dataXml);
 实际中发现时不能使用这自定义的`app/xml`值，会崩溃，只能使用pasteboard中预定义的MIME类型
 
 
+#### 对象属性从有值变为空，应用会崩溃
+
+```typescript
+@Entry
+@Component
+struct PlayGround {
+  @State people:People = new People()
+
+
+  private log(log:string):boolean{
+    console.error(`---------${log}---------`)
+    return true
+  }
+
+  build(){
+    Column() {
+      if(this.people){
+        Text(`姓名： ${this.people.name}  年龄：${this.people.age}`)
+        if(this.people.address){
+          if(this.log('address 有值')){
+            Text( `地址： ${this.people.address.name}  邮编：${this.people.address.zipCode}`)
+          }
+          else{
+            Text('address 为空 内部')
+          }
+        }else{
+          if(this.log('address 为空 最外层')){
+            Text('address 为空 最外层')
+          }
+        }
+      }
+      Button('网络请求返回一个有地址的对象').onClick(()=>{
+        let tmpPeople = new People()
+        let tmpAddress = new Address()
+        tmpAddress.name = '测试地址'
+        tmpAddress.zipCode = -1000
+        tmpPeople.address = tmpAddress
+
+        tmpPeople.age = 10
+        tmpPeople.name = '有地址'
+        this.people = tmpPeople
+      })
+
+      Button('网络请求返回一个没有地址的对象').onClick(()=>{
+        let tmpPeople = new People()
+        tmpPeople.age = 10
+        tmpPeople.name = '没有地址'
+        this.people = tmpPeople
+      })
+    }.margin({top:48})
+  }
+}
+class  Address{
+  zipCode:number
+  name:string
+}
+class  People{
+  name:string
+  age:number
+  address :Address
+}
+```
+
+很简单的页面，展示对象属性，
+刚开始运行，一切正常。点击返回有地址的对象，页面正常刷新并且展示。然后点击返回没有地址的对象，这时候会崩溃。
+日志指向了 `Text( `地址： ${this.people.address.name}  邮编：${this.people.address.zipCode}`)`
+说是`不能从undefined对象中读取name属性` 具体可以看这里：[开发这论坛](https://developer.huawei.com/consumer/cn/forum/topic/0204136377582311317?fid=0102683795438680754)
+规避方案：我有一个朋友，尝试出了使用 `?.`来规避的方法。 取对象属性除了要用if判断来控制渲染之外，需要用 `?.`来取值，防崩溃，将上面的代码修改为
+`Text( `地址： ${this.people.address?.name}  邮编：${this.people.address?.zipCode}`)`
+应用不会崩溃，这个对象也不会渲染在页面上
+
 
