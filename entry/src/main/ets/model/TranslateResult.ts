@@ -128,6 +128,7 @@ export class BaiduAIDictResult{
       tmp.dst = json['dst']
       tmp.dst_tts = json['dst_tts']
       tmp.src = json['src']
+      tmp.src_tts = json['src_tts']
       let dictJSON:JSON = json['dict']
       if(dictJSON){
         tmp.dict = WordResult.fromJSON(dictJSON)
