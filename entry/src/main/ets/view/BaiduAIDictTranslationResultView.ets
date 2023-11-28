@@ -1,10 +1,17 @@
 import promptAction from '@ohos.promptAction';
-import { BaiduAIDictSimpleMeans, BaiduAIDictTranslationResult, MeansInSimple } from '../model/TranslateResult'
+import {
+  BaiduAIDictSimpleMeans,
+  BaiduAIDictTranslationResult,
+MeansInSimple,
+ZDictDetailMeans,
+  ZDictDetailIdiom
+
+
+} from '../model/TranslateResult'
 import { AVPlayerHelper } from '../util/AVPlayerHelper';
 
 @Component
 export default struct BaiduAIDictTranslationResultView {
-  // @Consume('baidu_ai_dict_translation_result') result: BaiduAIDictTranslationResult
   @Link result: BaiduAIDictTranslationResult
   @State playSrcTTSAnimatorState: AnimationStatus = AnimationStatus.Initial
   @State playDstTTSAnimatorState: AnimationStatus = AnimationStatus.Initial
@@ -21,25 +28,25 @@ export default struct BaiduAIDictTranslationResultView {
    * @param simpleMeans
    */
   @Builder
-  buildSimpleMeans( $$:{simpleMeans: BaiduAIDictSimpleMeans}): void {
-    Column(){
-      if($$.simpleMeans?.from){
-        Text(){
+  buildSimpleMeans($$: { simpleMeans: BaiduAIDictSimpleMeans }): void {
+    Column() {
+      if ($$.simpleMeans?.from) {
+        Text() {
           Span('来源').fontSize(16).fontColor(Color.Black)
-          Span($$.simpleMeans?.from).fontSize(18).fontColor(Color.Red).margin({left:10})
+          Span($$.simpleMeans?.from).fontSize(18).fontColor(Color.Red).margin({ left: 10 })
         }.fontSize(16)
       }
-      if($$.simpleMeans?.word_symbol && $$.simpleMeans?.word_symbol.length > 0){
-        Text(){
+      if ($$.simpleMeans?.word_symbol && $$.simpleMeans?.word_symbol.length > 0) {
+        Text() {
           Span('读音').fontSize(16).fontColor(Color.Black)
-          Span($$.simpleMeans?.word_symbol).fontSize(18).fontColor(Color.Red).margin({left:10})
+          Span($$.simpleMeans?.word_symbol).fontSize(18).fontColor(Color.Red).margin({ left: 10 })
         }.fontSize(16)
       }
-      if($$.simpleMeans?.means){
-        Flex({wrap:FlexWrap.Wrap}){
-          ForEach($$.simpleMeans?.means ,(means: MeansInSimple)=>{
-            Row(){
-              if(means?.part && means.part.length > 0){
+      if ($$.simpleMeans?.means) {
+        Flex({ wrap: FlexWrap.Wrap }) {
+          ForEach($$.simpleMeans?.means, (means: MeansInSimple) => {
+            Row() {
+              if (means?.part && means.part.length > 0) {
                 Text(means?.part).fontStyle(FontStyle.Italic)
               }
               Text(means?.text)
@@ -73,124 +80,215 @@ export default struct BaiduAIDictTranslationResultView {
           })
         }
       }
-      
-    }.height('100%').width('100%').justifyContent(FlexAlign.Start).alignItems(HorizontalAlign.Start)
+
+    }.width('100%').justifyContent(FlexAlign.Start).alignItems(HorizontalAlign.Start)
+  }
+
+@Builder
+buildZDictDetailMeans($$:{means:ZDictDetailMeans[]}):void{
+    if($$.means && $$.means?.length>0){
+      Column(){
+        ForEach($$.means,(value:ZDictDetailMeans)=>{
+          Row(){
+            Text(){
+              Span("释义")
+              Span(value.main)
+            }
+          }
+          Row(){
+            Text(){
+              Span("举例")
+              Span(value.sub[0])
+            }
+          }
+        })
+
+
+      }.width('100%').alignItems(HorizontalAlign.Start)
+    }
+}
+
+  @Builder
+  buildZDictIdiom($$: { idiom: ZDictDetailIdiom }): void {
+    if ($$.idiom) {
+      Column() {
+        Row() {
+          if ($$.idiom?.pinyin)
+          Text() {
+            Span("拼音：")
+            Span($$.idiom?.pinyin)
+          }
+        }
+
+        Row() {
+          if ($$.idiom?.synonyms)
+          Text() {
+            Span("同义词：")
+            Span($$.idiom?.synonyms)
+          }
+        }
+
+        Row() {
+          if ($$.idiom?.antonym)
+          Text() {
+            Span("反义词：")
+            Span($$.idiom?.antonym)
+          }
+        }
+
+        Row() {
+          if ($$.idiom?.example)
+          Text() {
+            Span("示例：")
+            Span($$.idiom?.example)
+          }
+        }
+
+        Row() {
+          if ($$.idiom?.explain)
+          Text() {
+            Span("释义：")
+            Span($$.idiom?.explain)
+          }
+        }
+
+        Row() {
+          if ($$.idiom?.from)
+          Text() {
+            Span("来源：")
+            Span($$.idiom?.from)
+          }
+        }
+
+        Row() {
+          if ($$.idiom?.grammer)
+          Text() {
+            Span("语法：")
+            Span($$.idiom?.grammer)
+          }
+        }
+
+      }.alignItems(HorizontalAlign.Start).width('100%')
+    }
+  }
+
+
+  @Builder
+  buildCommon(){
+
   }
 
   build() {
     Column() {
-      if(this.result){
+      if (this.result) {
+
+        if (this.result.errorMessage && this.result.errorMessage.length > 0) {
+          Text(JSON.stringify(this.result))
+        } else {
+          Column() {
+            Row() {
+              Text(this.result.result.dst).fontSize(26)
+              ImageAnimator()
+                .margin(10)
+                .images([
+                  { src: $r('app.media.voice1'), width: 24, height: 24 },
+                  { src: $r('app.media.voice2'), width: 24, height: 24 },
+                  { src: $r('app.media.voice3'), width: 24, height: 24 },
+                ])
+                .duration(600)
+                .state(this.playDstTTSAnimatorState)
+                .onClick(() => {
 
 
+                  this.avPlayerHelper.playWithUrl(this.result.result.dst_tts, (state: string) => {
+                    switch (state) {
+                      case 'playing':
+                        console.error('dst state playing called')
+                        this.playDstTTSAnimatorState = AnimationStatus.Running
+                        break;
+                      case 'paused':
+                        console.error('dst state paused called')
+                        this.playDstTTSAnimatorState = AnimationStatus.Paused
+                        break;
+                      case 'completed':
+                        console.error('dst state completed called')
+                        this.playDstTTSAnimatorState = AnimationStatus.Stopped
+                        break;
+                      case 'stopped':
+                        console.error('dst state stopped called')
+                        this.playDstTTSAnimatorState = AnimationStatus.Stopped
+                        break;
+                    }
+                  })
+                }
+                )
+                .fillMode(FillMode.None)
+                .reverse(true)
+                .iterations(-1)
+                .width(24)
+                .height(24)
 
-      if (this.result.errorMessage && this.result.errorMessage.length > 0) {
-        Text(JSON.stringify(this.result))
-      } else {
+            }.width('100%').justifyContent(FlexAlign.Start)
 
-        Column() {
-          Row() {
-            Text(this.result.result.dst).fontSize(26)
-            ImageAnimator()
-              .margin(10)
-              .images([
-                { src: $r('app.media.voice1'), width: 24, height: 24 },
-                { src: $r('app.media.voice2'), width: 24, height: 24 },
-                { src: $r('app.media.voice3'), width: 24, height: 24 },
-              ])
-              .duration(600)
-              .state(this.playDstTTSAnimatorState)
-              .onClick(() => {
-
-
-                this.avPlayerHelper.playWithUrl(this.result.result.dst_tts, (state: string) => {
-                  switch (state) {
-                    case 'playing':
-                      console.error('dst state playing called')
-                      this.playDstTTSAnimatorState = AnimationStatus.Running
-                      break;
-                    case 'paused':
-                      console.error('dst state paused called')
-                      this.playDstTTSAnimatorState = AnimationStatus.Paused
-                      break;
-                    case 'completed':
-                      console.error('dst state completed called')
-                      this.playDstTTSAnimatorState = AnimationStatus.Stopped
-                      break;
-                    case 'stopped':
-                      console.error('dst state stopped called')
-                      this.playDstTTSAnimatorState = AnimationStatus.Stopped
-                      break;
-                  }
+            Row() {
+              Text(this.result.result.src).fontSize(22)
+              ImageAnimator()
+                .margin(10)
+                .images([
+                  { src: $r('app.media.voice1'), width: 24, height: 24 },
+                  { src: $r('app.media.voice2'), width: 24, height: 24 },
+                  { src: $r('app.media.voice3'), width: 24, height: 24 },
+                ])
+                .duration(1000)
+                .state(this.playSrcTTSAnimatorState)
+                .onClick(() => {
+                  this.avPlayerHelper.playWithUrl(this.result.result.src_tts, (state: string) => {
+                    switch (state) {
+                      case 'playing':
+                        console.error('src state playing called')
+                        this.playSrcTTSAnimatorState = AnimationStatus.Running
+                        break;
+                      case 'paused':
+                        console.error('src state paused called')
+                        this.playSrcTTSAnimatorState = AnimationStatus.Paused
+                        break;
+                      case 'completed':
+                        console.error('src state completed called')
+                        this.playSrcTTSAnimatorState = AnimationStatus.Stopped
+                        break;
+                      case 'stopped':
+                        console.error('src state stopped called')
+                        this.playSrcTTSAnimatorState = AnimationStatus.Stopped
+                        break;
+                    }
+                  })
                 })
-              }
-              )
-              .fillMode(FillMode.None)
-              .reverse(true)
-              .iterations(-1)
-              .width(24)
-              .height(24)
-
-          }.width('100%').justifyContent(FlexAlign.Start)
-
-          Row() {
-            Text(this.result.result.src).fontSize(22)
-            ImageAnimator()
-              .margin(10)
-              .images([
-                { src: $r('app.media.voice1'), width: 24, height: 24 },
-                { src: $r('app.media.voice2'), width: 24, height: 24 },
-                { src: $r('app.media.voice3'), width: 24, height: 24 },
-              ])
-              .duration(1000)
-              .state(this.playSrcTTSAnimatorState)
-              .onClick(() => {
-                this.avPlayerHelper.playWithUrl(this.result.result.src_tts, (state: string) => {
-                  switch (state) {
-                    case 'playing':
-                      console.error('src state playing called')
-                      this.playSrcTTSAnimatorState = AnimationStatus.Running
-                      break;
-                    case 'paused':
-                      console.error('src state paused called')
-                      this.playSrcTTSAnimatorState = AnimationStatus.Paused
-                      break;
-                    case 'completed':
-                      console.error('src state completed called')
-                      this.playSrcTTSAnimatorState = AnimationStatus.Stopped
-                      break;
-                    case 'stopped':
-                      console.error('src state stopped called')
-                      this.playSrcTTSAnimatorState = AnimationStatus.Stopped
-                      break;
-                  }
-                })
-              })
-              .fillMode(FillMode.None)
-              .reverse(true)
-              .iterations(-1)
-              .width(24)
-              .height(24)
-          }.width('100%').justifyContent(FlexAlign.Start).margin({top :10})
+                .fillMode(FillMode.None)
+                .reverse(true)
+                .iterations(-1)
+                .width(24)
+                .height(24)
+            }.width('100%').justifyContent(FlexAlign.Start).margin({ top: 10 })
 
 
+            this.buildSimpleMeans({ simpleMeans: this.result.result.dict?.simpleMeans })
+            this.buildZDictIdiom({ idiom: this.result.result.dict?.zDict?.detail?.idiom })
+            this.buildZDictDetailMeans({ means: this.result.result.dict?.zDict?.detail?.means })
 
-            this.buildSimpleMeans({simpleMeans: this.result.result.dict?.simpleMeans})
-
+          }
+          .margin({ left: 15, right: 15, top: 20 })
+          .padding(10)
+          .backgroundColor(0XEEEEEE)
+          .backdropBlur(10)
+          .width('100%')
+          .alignItems(HorizontalAlign.Start)
+          .borderRadius(4)
 
         }
-        .margin({ left: 15, right: 15, top: 20 })
-        .padding(10)
-        .backgroundColor(0XEEEEEE)
-        .backdropBlur(10)
-        .width('100%')
-        .alignItems(HorizontalAlign.Start)
-        .borderRadius(4)
-
-      }
       }
 
 
-    }.justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).height('100%')
+    }.justifyContent(FlexAlign.Start).alignItems(HorizontalAlign.Center).height('100%')
 
   }
 }

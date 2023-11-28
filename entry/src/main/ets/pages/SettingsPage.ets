@@ -13,6 +13,7 @@ import {
   youdao_ai_translation_general_key,
   youdao_ai_translation_general_secret,
 } from '../model/GeneralConfig'
+import { MainPageTopSwiper } from '../view/MainPageTopSwiper'
 @Entry
 @Component
 struct SettingPage {
@@ -181,6 +182,8 @@ struct SettingPage {
       .onClick(() => {
         promptAction.showToast({ message: "开发中~~" })
       })
+
+      MainPageTopSwiper()
     }.padding({ top: 48 })
   }
 }

@@ -1,3 +1,4 @@
+import List from '@ohos.util.List'
 export class TranslationResult {
   query: string
   translations: TranslationGroup[]
@@ -44,6 +45,45 @@ export class LanguageGroup {
   groupName: string
   languages: TranslateLanguage[]
 }
+
+
+////// 百度机器翻译通用版
+
+export class BaiduAIGeneralTranslationResult {
+  errorCode: string
+  errorMessage: string
+  logId: string
+  result: {
+    dst: string,
+    src: string
+  }[]
+
+
+  static fromJSON(json: object): BaiduAIGeneralTranslationResult {
+    let tmp = new BaiduAIGeneralTranslationResult()
+    tmp.errorCode = json['error_code']
+    tmp.errorMessage = json['error_msg']
+    tmp.logId = json['log_id']
+    let resultJSON = json['result']
+    if (resultJSON) {
+      let trans_result_arr: JSON [] = resultJSON['trans_result']
+      if (trans_result_arr && trans_result_arr.length > 0) {
+        tmp.result = []
+        trans_result_arr.forEach(trans_result => {
+          tmp.result.push({ dst: trans_result['dst'], src: trans_result['src'] });
+        })
+      }
+    }
+
+    return tmp
+  }
+}
+
+
+
+
+
+////// 百度机器翻译词典版
 
 
 export class MeansInSimple {
@@ -102,15 +142,123 @@ export class BaiduAIDictSimpleMeans {
   }
 }
 
+export class ZDict{
+  detail:ZDictDetail
+
+  static fromJSON(json:Object):ZDict{
+    let tmp:ZDict = new ZDict()
+
+    let detailJSON:JSON = json['detail']
+    if(detailJSON){
+      tmp.detail = ZDictDetail.fromJSON(detailJSON)
+    }
+
+    return tmp;
+  }
+
+}
+
+export class ZDictDetail{
+
+  idiom:ZDictDetailIdiom
+  means:ZDictDetailMeans[]
+
+  static fromJSON(json:Object):ZDictDetail{
+    let tmp :ZDictDetail = new ZDictDetail()
+
+    let idiomJSON:JSON = json['chenyu']
+    if(idiomJSON){
+      tmp.idiom = ZDictDetailIdiom.fromJSON(idiomJSON)
+    }
+
+    let meansJSON:JSON[] = json['means']
+    if(meansJSON && meansJSON.length >0){
+      let exp:JSON[] = meansJSON[0]['exp']
+      if(exp && exp.length > 0){
+        let des:JSON[] = exp[0]['des']
+        if(des && des.length >0){
+          tmp.means = []
+          des.forEach((value)=>{
+            let zDictDetailMeans:ZDictDetailMeans = ZDictDetailMeans.fromJSON(value)
+            if(zDictDetailMeans){
+              tmp.means.push(zDictDetailMeans)
+            }
+          })
+        }
+      }
+    }
+
+    return tmp;
+  }
+
+}
+
+
+export class ZDictDetailMeans{
+  main:string
+  sub:List<string>
+
+  static fromJSON(json:Object):ZDictDetailMeans{
+    let tmp = new ZDictDetailMeans()
+    tmp.main = json['main']
+
+    let subJSON:JSON[] =json['sub']
+    if(subJSON && subJSON.length > 0){
+      tmp.sub = new List()
+
+      subJSON.forEach((value)=>{
+        tmp.sub.add( JSON.stringify(value))
+      })
+
+    }
+
+
+    return tmp
+  }
+
+}
+
+
+export class ZDictDetailIdiom{
+
+  antonym:string
+  example:string
+  explain:string
+  from:string
+  grammer:string
+  pinyin:string
+  synonyms:string
+
+  static fromJSON(json:Object):ZDictDetailIdiom{
+    let tmp : ZDictDetailIdiom = new ZDictDetailIdiom()
+    tmp.antonym = json['antonym']
+    tmp.example = json['example']
+    tmp.explain = json['explain']
+    tmp.from = json['from']
+    tmp.grammer = json['grammer']
+    tmp.pinyin = json['pinyin']
+    tmp.synonyms = json['synonyms']
+    return tmp;
+  }
+
+}
+
+
+
 
 export class WordResult {
   simpleMeans: BaiduAIDictSimpleMeans
-
+  zDict:ZDict
   static fromJSON(json: Object): WordResult {
     let tmp: WordResult = new WordResult();
 
     let worResult: JSON = JSON.parse(json as string)['word_result']
     tmp.simpleMeans = BaiduAIDictSimpleMeans.fromJSON(worResult['simple_means'])
+
+    let zDictJSON = worResult['zdict']
+    if(zDictJSON){
+      tmp.zDict = ZDict.fromJSON(zDictJSON)
+    }
     return tmp
   }
 }
@@ -133,7 +281,6 @@ export class BaiduAIDictResult{
       if(dictJSON){
         tmp.dict = WordResult.fromJSON(dictJSON)
       }
-      console.error("---dict----" + tmp.dict + " type" +(typeof tmp.dict ))
 
     }
     return tmp;
@@ -150,6 +297,8 @@ export class BaiduAIDictTranslationResult {
   result: BaiduAIDictResult
 
   static fromJSON(json: object): BaiduAIDictTranslationResult {
+    console.error("--------百度机器翻译结果---------")
+    console.error(JSON.stringify(json))
     let tmp = new BaiduAIDictTranslationResult()
     tmp.errorCode = json['error_code']
     tmp.errorMessage = json['error_msg']
@@ -159,17 +308,7 @@ export class BaiduAIDictTranslationResult {
       let trans_result_arr: JSON [] = resultJSON['trans_result']
       if (trans_result_arr && trans_result_arr.length > 0) {
         let trans_result = trans_result_arr[0]
-
-        // let dictJSON: JSON = trans_result['dict'];
-        // let dict: WordResult
-        // if (dictJSON) {
-        //   dict = WordResult.fromJSON(dictJSON)
-        // }
-        //
-        // let result:BaiduAIDictResult = new BaiduAIDictResult()
-
         tmp.result = BaiduAIDictResult.fromJSON(trans_result)
-
       }
     }
     return tmp;
@@ -177,33 +316,4 @@ export class BaiduAIDictTranslationResult {
 }
 
 
-export class BaiduAIGeneralTranslationResult {
-  errorCode: string
-  errorMessage: string
-  logId: string
-  result: {
-    dst: string,
-    src: string
-  }[]
-
-
-  static fromJSON(json: object): BaiduAIGeneralTranslationResult {
-    let tmp = new BaiduAIGeneralTranslationResult()
-    tmp.errorCode = json['error_code']
-    tmp.errorMessage = json['error_msg']
-    tmp.logId = json['log_id']
-    let resultJSON = json['result']
-    if (resultJSON) {
-      let trans_result_arr: JSON [] = resultJSON['trans_result']
-      if (trans_result_arr && trans_result_arr.length > 0) {
-        tmp.result = []
-        trans_result_arr.forEach(trans_result => {
-          tmp.result.push({ dst: trans_result['dst'], src: trans_result['src'] });
-        })
-      }
-    }
-
-    return tmp
-  }
-}
 

@@ -1,7 +1,6 @@
 import prompt from '@ohos.promptAction';
 import { TranslationResult, TranslateLanguage, BaiduAIGeneralTranslationResult, BaiduAIDictTranslationResult } from '../model/TranslateResult'
 import { TranslationAPI } from '../model/TranslationAPI'
-import { MainPageTopSwiper } from '../view/MainPageTopSwiper';
 import { BaiduHttpUtil } from '../util/BaiduHttpUtils';
 import { TranslationResultView } from '../view/TranslationResultView';
 import SelectLanguageDialog from '../dialog/SelectLanguageDialog';
@@ -338,7 +337,7 @@ struct Index {
 
       this.buildTranslationResult()
 
-      MainPageTopSwiper()
+
 
     }
     .width('100%').padding({ top: 48 }).justifyContent(FlexAlign.Start).layoutWeight(1)
