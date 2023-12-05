@@ -3,19 +3,24 @@
 由于身边没有对应的设备，只在MetaPadPro 2019 鸿蒙4.0.0上验证
 
 
-
 ## 翻译api 
 
-[ x ] [百度翻译开放平台](https://fanyi-api.baidu.com/)
+建议使用**百度机器翻译词典版**  
+建议使用**中英互译**或者**英中互译**，其他语言我没测试
+音标不一定能渲染出来，可能是控件不支持或者我的写法有问题，欢迎pr欢迎issue  
 
-[ ] 百度机器翻译
 
-[ ] 有道翻译
+√ [百度翻译开放平台](https://fanyi-api.baidu.com/)  
+√ [百度机器翻译通用版](https://ai.baidu.com/ai-doc/MT/4kqryjku9?_=1701785410385)  
+√ [百度机器翻译词典版](https://ai.baidu.com/ai-doc/MT/nkqrzmbpc)
 
 
 ## 版权声明
 
-虽然极大概率不会有啥培训机构看上这个仓库，但还是先声明一下 ：**禁止商用**，想要商用请联系作者本人取得授权；**禁止商用**，想要商用请联系作者本人取得授权；**禁止商用**，想要商用请联系作者本人取得授权
+虽然极大概率不会有啥培训机构看上这个仓库，但还是先声明一下 ：  
+**禁止商用**，想要商用请联系作者本人取得授权；  
+**禁止商用**，想要商用请联系作者本人取得授权；  
+**禁止商用**，想要商用请联系作者本人取得授权
 邮箱：huangyuan@huangyuanlove.com
 或者在github 或者 gitee 上都能找到联系方式
 
@@ -27,23 +32,21 @@
 
 ## 踩坑
 
-### 三方库
-#### crypto-js
-* [crypto-js](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js) 该库在2.0.3版本将最小api版本为10，个人认为现在的这个时间段(2023年11月18日，harmonyos next 还只对企业合作伙伴开放，部分手机还在使用HarmonyOS4测试版)，将api最低版本从9提升到10应该更新一个大版本号，不应该只更新小版本号。应用中锁定了版本为**2.0.1**
 
+### 三方库版本
+[crypto-js](https://ohpm.openharmony.cn/#/cn/detail/@ohos%2Fcrypto-js) 该库在2.0.3版本将最小api版本为10，个人认为现在的这个时间段(2023年11月18日，harmonyos next 还只对企业合作伙伴开放，部分手机还在使用HarmonyOS4测试版)，将api最低版本从9提升到10应该更新一个大版本号，不应该只更新小版本号。应用中锁定了版本为**2.0.1**
 
-### 系统api
+### 冻屏、黑屏、假死
 
-#### 冻屏、黑屏、假死
-
-运行环境是MetaPadPro 2019 鸿蒙4.0.0，使用api9+stage模型开发，运行在模拟器上正常，但是运行在该设备上出现冻屏现象，页面轮播图无法轮播，滑动组件无法发滑动，就像卡在了这一帧上一样。点击输入框键盘能弹出，但页面是黑的。可以通过锁屏、解锁或者音量键刷新页面
-感觉上就是屏幕不会主动刷新，需要按物理键让屏幕刷新一次似的。
-询问过朋友后发现，这个现象只会出现在麒麟系列芯片的收集或平板上，看到论坛也有人咨询相同的问题。向官方提工单后官方回复是已知问题，将会在HarmonyOS next系统中修复
+运行环境是MetaPadPro 2019 鸿蒙4.0.0，使用api9+stage模型开发。  
+运行在模拟器上正常，但是运行在该设备上出现冻屏现象，页面轮播图无法轮播，滑动组件无法发滑动，就像卡在了这一帧上一样。点击输入框键盘能弹出，但页面是黑的。可以通过锁屏、解锁或者音量键刷新页面
+感觉上就是屏幕不会主动刷新，需要按物理键让屏幕刷新一次似的。  
+询问过朋友后发现，这个现象只会出现在麒麟系列芯片的收集或平板上，看到论坛也有人咨询相同的问题。向官方提工单后官方回复是已知问题，将会在HarmonyOS next系统中修复  
 如果只是自己写着玩，可以安装 [scrcpy](https://github.com/Genymobile/scrcpy) 将屏幕内容同步到电脑上，在电脑上操作是没有问题的。
 如果是公司用，建议等等，直接上HarmonyOS Next进行开发。或者降低api版本。
 
-#### PersistentStorage和@StorageLink
-* 项目中有些用户偏好设置需要持久化存储，于是选择了PersistentStorage和@StorageLink方式进行存储，大致如下
+### PersistentStorage和@StorageLink
+项目中有些用户偏好设置需要持久化存储，于是选择了PersistentStorage和@StorageLink方式进行存储，大致如下
 ``` TypeScript
 export class User {
   constructor(name: string, age: number) {
@@ -82,7 +85,7 @@ struct Tmp {
 
 看到论坛有同样的求助，有开发者回复说他是将对象转成字符串保存的，使用的时候再parse一下。
 
-#### 剪贴板 pasteboard.getSystemPasteboard()
+### 剪贴板 pasteboard.getSystemPasteboard()
 
 
 
@@ -102,7 +105,7 @@ let pasteDataRecord = pasteboard.createRecord('app/xml', dataXml);
 实际中发现时不能使用这自定义的`app/xml`值，会崩溃，只能使用pasteboard中预定义的MIME类型
 
 
-#### 对象属性从有值变为空，应用会崩溃
+### 对象属性从有值变为空，应用会崩溃
 
 ```typescript
 @Entry
@@ -165,12 +168,16 @@ class  People{
 }
 ```
 
-很简单的页面，展示对象属性，
-刚开始运行，一切正常。点击返回有地址的对象，页面正常刷新并且展示。然后点击返回没有地址的对象，这时候会崩溃。
-日志指向了 `Text( `地址： ${this.people.address.name}  邮编：${this.people.address.zipCode}`)`
-说是`不能从undefined对象中读取name属性` 具体可以看这里：[开发这论坛](https://developer.huawei.com/consumer/cn/forum/topic/0204136377582311317?fid=0102683795438680754)
-规避方案：我有一个朋友，尝试出了使用 `?.`来规避的方法。 取对象属性除了要用if判断来控制渲染之外，需要用 `?.`来取值，防崩溃，将上面的代码修改为
-`Text( `地址： ${this.people.address?.name}  邮编：${this.people.address?.zipCode}`)`
+很简单的页面，展示对象属性.  
+刚开始运行，一切正常。点击返回有地址的对象，页面正常刷新并且展示。  
+然后点击返回没有地址的对象，这时候会崩溃。
+日志指向了 `Text( `地址： ${this.people.address.name}  邮编：${this.people.address.zipCode}`)`  
+说是`不能从undefined对象中读取name属性` 具体可以看这里：[开发这论坛](https://developer.huawei.com/consumer/cn/forum/topic/0204136377582311317?fid=0102683795438680754)  
+规避方案：使用 `?.`来规避的方法。 取对象属性除了要用if判断来控制渲染之外，需要用 `?.`来取值，防崩溃.   
+将上面的代码修改为`Text( `地址： ${this.people.address?.name}  邮编：${this.people.address?.zipCode}`)`
 应用不会崩溃，这个对象也不会渲染在页面上
+注意，虽然可以用`visibility`属性来控制控件的显示与否，即使组件处于隐藏状态，在页面刷新时仍存在重新创建过程，因此当对性能有严格要求时建议使用条件渲染代替。
 
-
+----
+常见的控件、属性基本上都使用过了，代码规范写的不行，拆分也不是很合理。
+主要目的就是学习ArkTS语法和控件用法，暂时告一段落吧
