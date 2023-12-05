@@ -2,10 +2,11 @@ import promptAction from '@ohos.promptAction';
 import {
   BaiduAIDictSimpleMeans,
   BaiduAIDictTranslationResult,
-MeansInSimple,
-ZDictDetailMeans,
-  ZDictDetailIdiom
-
+  MeansInSimple,
+  ZDictDetailMeans,
+  ZDictDetailIdiom,
+  BaiduAIDictSimpleMeansForEng,
+  PartsForEngInSymbols
 
 } from '../model/TranslateResult'
 import { AVPlayerHelper } from '../util/AVPlayerHelper';
@@ -81,32 +82,72 @@ export default struct BaiduAIDictTranslationResultView {
         }
       }
 
-    }.width('100%').justifyContent(FlexAlign.Start).alignItems(HorizontalAlign.Start)
+    }
+    .justifyContent(FlexAlign.Start)
+    .alignItems(HorizontalAlign.Start)
+    .margin(10)
+    .borderRadius(6)
+    .backgroundColor(Color.White)
   }
 
-@Builder
-buildZDictDetailMeans($$:{means:ZDictDetailMeans[]}):void{
-    if($$.means && $$.means?.length>0){
-      Column(){
-        ForEach($$.means,(value:ZDictDetailMeans)=>{
-          Row(){
-            Text(){
-              Span("释义")
-              Span(value.main)
+  @Builder
+  buildZDictDetailMeans($$: { means: ZDictDetailMeans[] }): void {
+    if ($$.means && $$.means?.length > 0) {
+      Column() {
+        ForEach($$.means, (value: ZDictDetailMeans) => {
+          Column() {
+
+
+            Row() {
+              Text() {
+                Span("释义").fontColor(Color.Blue).fontSize(18)
+
+                Span(value.main).fontColor("#333333").fontSize(18).margin({ left: 6 })
+              }
             }
-          }
-          Row(){
-            Text(){
-              Span("举例")
-              Span(value.sub[0])
+
+            Row() {
+              Text() {
+                Span("举例").fontColor(Color.Blue).fontSize(18)
+                Span(value.sub[0]).fontColor("#333333").fontSize(18).margin({ left: 6 })
+              }
             }
-          }
+          }.margin(4).alignItems(HorizontalAlign.Start)
         })
 
 
-      }.width('100%').alignItems(HorizontalAlign.Start)
+      }
+      .justifyContent(FlexAlign.Start)
+      .alignItems(HorizontalAlign.Start)
+      .margin(10)
+      .borderRadius(6)
+      .backgroundColor(Color.White)
     }
-}
+  }
+
+  @Builder
+  buildZDictSimple($$: { means: ZDictDetailMeans[] }) {
+    if ($$.means && $$.means?.length > 0) {
+      Column() {
+        ForEach($$.means, (value: ZDictDetailMeans) => {
+          Row() {
+            Text() {
+              Span("释义").fontColor(Color.Blue).fontSize(18)
+              Span(value.main).fontColor("#333333").fontSize(18).margin({ left: 6 })
+            }
+          }
+
+        })
+
+
+      }
+      .justifyContent(FlexAlign.Start)
+      .alignItems(HorizontalAlign.Start)
+      .margin(10)
+      .borderRadius(6)
+      .backgroundColor(Color.White)
+    }
+  }
 
   @Builder
   buildZDictIdiom($$: { idiom: ZDictDetailIdiom }): void {
@@ -115,67 +156,184 @@ buildZDictDetailMeans($$:{means:ZDictDetailMeans[]}):void{
         Row() {
           if ($$.idiom?.pinyin)
           Text() {
-            Span("拼音：")
-            Span($$.idiom?.pinyin)
+            Span("拼音：").fontColor(Color.Blue).fontSize(18)
+            Span($$.idiom?.pinyin).fontColor("#333333").fontSize(18).margin({ left: 6 })
           }
         }
 
         Row() {
           if ($$.idiom?.synonyms)
           Text() {
-            Span("同义词：")
-            Span($$.idiom?.synonyms)
+            Span("同义词：").fontColor(Color.Blue).fontSize(18)
+            Span($$.idiom?.synonyms).fontColor("#333333").fontSize(18).margin({ left: 6 })
           }
         }
 
         Row() {
           if ($$.idiom?.antonym)
           Text() {
-            Span("反义词：")
-            Span($$.idiom?.antonym)
+            Span("反义词：").fontColor(Color.Blue).fontSize(18)
+            Span($$.idiom?.antonym).fontColor("#333333").fontSize(18).margin({ left: 6 })
           }
         }
 
         Row() {
           if ($$.idiom?.example)
           Text() {
-            Span("示例：")
-            Span($$.idiom?.example)
+            Span("示例：").fontColor(Color.Blue).fontSize(18)
+            Span($$.idiom?.example).fontColor("#333333").fontSize(18).margin({ left: 6 })
           }
         }
 
         Row() {
           if ($$.idiom?.explain)
           Text() {
-            Span("释义：")
-            Span($$.idiom?.explain)
+            Span("释义：").fontColor(Color.Blue).fontSize(18)
+            Span($$.idiom?.explain).fontColor("#333333").fontSize(18).margin({ left: 6 })
           }
         }
 
         Row() {
           if ($$.idiom?.from)
           Text() {
-            Span("来源：")
-            Span($$.idiom?.from)
+            Span("来源：").fontColor(Color.Blue).fontSize(18)
+            Span($$.idiom?.from).fontColor("#333333").fontSize(18).margin({ left: 6 })
           }
         }
 
         Row() {
           if ($$.idiom?.grammer)
           Text() {
-            Span("语法：")
-            Span($$.idiom?.grammer)
+            Span("语法：").fontColor(Color.Blue).fontSize(18)
+            Span($$.idiom?.grammer).fontColor("#333333").fontSize(18).margin({ left: 6 })
           }
         }
 
-      }.alignItems(HorizontalAlign.Start).width('100%')
+      }
+      .justifyContent(FlexAlign.Start)
+      .alignItems(HorizontalAlign.Start)
+      .margin(10)
+      .borderRadius(6)
+      .backgroundColor(Color.White)
     }
   }
 
-
   @Builder
-  buildCommon(){
+  buildSimpleForEng($$: { simpleMeansForEng: BaiduAIDictSimpleMeansForEng }) {
+    if ($$.simpleMeansForEng) {
+      Column() {
 
+        Text() {
+          Span("来源")
+          Span($$.simpleMeansForEng?.from)
+        }
+
+
+
+
+        if ($$.simpleMeansForEng?.symbols) {
+          Row() {
+            if ($$.simpleMeansForEng?.symbols?.ph_en && $$.simpleMeansForEng?.symbols?.ph_en?.length > 0) {
+              Text() {
+                Span("英")
+                Span($$.simpleMeansForEng?.symbols?.ph_en)
+              }
+              .backgroundColor(Color.White).padding(2).margin(4).borderRadius(4)
+            }
+            if ($$.simpleMeansForEng?.symbols?.ph_am && $$.simpleMeansForEng?.symbols?.ph_am?.length > 0) {
+              Text() {
+                Span("美")
+                Span($$.simpleMeansForEng?.symbols?.ph_am)
+              }
+              .backgroundColor(Color.White).padding(2).margin(4).borderRadius(4)
+            }
+          }
+          if($$.simpleMeansForEng?.symbols?.parts && $$.simpleMeansForEng?.symbols?.parts?.length >0){
+            ForEach($$.simpleMeansForEng?.symbols.parts,(part:PartsForEngInSymbols)=>{
+              Row(){
+                Text(part.part)
+                Text(part.means.toString())
+              }
+            })
+          }
+
+
+        }
+
+
+        if ($$.simpleMeansForEng?.exchange) {
+          Flex({ wrap: FlexWrap.Wrap }) {
+            if ($$.simpleMeansForEng?.exchange?.word_third && $$.simpleMeansForEng?.exchange?.word_third?.length > 0) {
+              Text() {
+                Span("第三人称单数:")
+                ForEach($$.simpleMeansForEng?.exchange?.word_third, (value: string) => {
+                  if (value && value.length > 0) {
+                    Span(value).fontColor(Color.Blue)
+                  }
+                })
+
+              }.padding(2).margin(4).borderRadius(4).backgroundColor(Color.White)
+            }
+            if ($$.simpleMeansForEng?.exchange?.word_pl && $$.simpleMeansForEng?.exchange?.word_pl?.length > 0) {
+              Text() {
+                Span("复数:")
+                ForEach($$.simpleMeansForEng?.exchange?.word_pl, (value: string) => {
+                  if (value && value.length > 0) {
+                    Span(value).fontColor(Color.Blue)
+                  }
+                })
+
+              }.padding(2).margin(4).borderRadius(4).backgroundColor(Color.White)
+            }
+
+            if ($$.simpleMeansForEng?.exchange?.word_ing && $$.simpleMeansForEng?.exchange?.word_ing?.length > 0) {
+              Text() {
+                Span("现在分词:")
+                ForEach($$.simpleMeansForEng?.exchange?.word_ing, (value: string) => {
+                  if (value && value.length > 0) {
+                    Span(value).fontColor(Color.Blue)
+                  }
+                })
+
+              }.padding(2).margin(4).borderRadius(4).backgroundColor(Color.White)
+            }
+
+            if ($$.simpleMeansForEng?.exchange?.word_past && $$.simpleMeansForEng?.exchange?.word_past?.length > 0) {
+              Text() {
+                Span("过去式:")
+                ForEach($$.simpleMeansForEng?.exchange?.word_past, (value: string) => {
+                  if (value && value.length > 0) {
+                    Span(value).fontColor(Color.Blue)
+                  }
+                })
+
+              }.padding(2).margin(4).borderRadius(4).backgroundColor(Color.White)
+            }
+
+            if ($$.simpleMeansForEng?.exchange?.word_done && $$.simpleMeansForEng?.exchange?.word_done?.length > 0) {
+              Text() {
+                Span("过去分词:")
+                ForEach($$.simpleMeansForEng?.exchange?.word_done, (value: string) => {
+                  if (value && value.length > 0) {
+                    Span(value).fontColor(Color.Blue)
+                  }
+                })
+
+              }.padding(2).margin(4).borderRadius(4).backgroundColor(Color.White)
+            }
+
+          }
+
+          Flex({ wrap: FlexWrap.Wrap, justifyContent: FlexAlign.Start }) {
+            ForEach($$.simpleMeansForEng?.tags, (tag) => {
+              Text(tag).backgroundColor(Color.White).borderRadius(2).margin(4).padding(2)
+            })
+          }
+
+        }
+
+      }.alignItems(HorizontalAlign.Start)
+    }
   }
 
   build() {
@@ -274,6 +432,8 @@ buildZDictDetailMeans($$:{means:ZDictDetailMeans[]}):void{
             this.buildSimpleMeans({ simpleMeans: this.result.result.dict?.simpleMeans })
             this.buildZDictIdiom({ idiom: this.result.result.dict?.zDict?.detail?.idiom })
             this.buildZDictDetailMeans({ means: this.result.result.dict?.zDict?.detail?.means })
+            this.buildZDictSimple({ means: this.result.result.dict?.zDict?.simple?.means })
+            this.buildSimpleForEng({ simpleMeansForEng: this.result.result.dict?.simpleMeansForEng })
 
           }
           .margin({ left: 15, right: 15, top: 20 })
