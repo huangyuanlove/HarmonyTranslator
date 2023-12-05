@@ -319,8 +319,8 @@ export class BaiduAIDictSimpleMeansForEng {
   static fromJSON(json: Object): BaiduAIDictSimpleMeansForEng {
     let tmp: BaiduAIDictSimpleMeansForEng = new BaiduAIDictSimpleMeansForEng()
     let symbolsJSON: JSON[] = json['symbols']
-    if (symbolsJSON) {
-      tmp.symbols = SymbolsForEng.fromJSON(symbolsJSON)
+    if (symbolsJSON && symbolsJSON.length > 0) {
+      tmp.symbols = SymbolsForEng.fromJSON(symbolsJSON[0])
     }
 
     let tagJSON: JSON = json['tags']

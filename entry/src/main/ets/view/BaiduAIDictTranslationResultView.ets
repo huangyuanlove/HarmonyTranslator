@@ -253,7 +253,7 @@ export default struct BaiduAIDictTranslationResultView {
               Row(){
                 Text(part.part)
                 Text(part.means.toString())
-              }
+              }.alignItems(VerticalAlign.Top).backgroundColor(Color.White).borderRadius(4).padding(2).margin(4)
             })
           }
 
